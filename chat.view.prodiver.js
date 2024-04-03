@@ -1,6 +1,10 @@
 const vscode = require('vscode');
+const path = require('path')
+const fs = require('fs')
+const html_modifier = require('html-modifier');
 
-const chatViewBuildPath = 'media';
+const chatViewBuildPath = 'ui';
+const WEBVIEW_INJECT_IN_MARK = '__webview_public_path__';
 class ChatViewProvider {
   constructor(
     _extensionUri,
@@ -52,13 +56,14 @@ class ChatViewProvider {
   _getHtmlForWebview(webview) {
     // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
     // const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, chatViewBuildPath, 'main.js'));
-    const mainPanelJsUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'ui', 'alitaUI.js'));
+    const mainPanelJsUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, chatViewBuildPath, 'dist', 'main.js'));
+    const publicPath = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, chatViewBuildPath, 'dist'));
 
 
     // Do the same for the stylesheet.
-    const styleResetUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, chatViewBuildPath, 'reset.css'));
-    const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, chatViewBuildPath, 'vscode.css'));
-    const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, chatViewBuildPath, 'main.css'));
+    const styleResetUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, chatViewBuildPath, 'dist', 'assets', 'index.css'));
+    const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, chatViewBuildPath, 'dist', 'assets', 'react.svg'));
+    const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, chatViewBuildPath, 'dist', 'assets', 'main.css'));
 
     // Use a nonce to only allow a specific script to be run.
     const nonce = getNonce();
@@ -66,45 +71,21 @@ class ChatViewProvider {
     return `<!DOCTYPE html>
 			<html lang="en">
 			<head>
-        <meta charset="UTF-8" />
-        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src https: data:; script-src vscode-resource:; style-src vscode-resource: 'unsafe-inline';">
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap"
-        />
-        <link rel="icon" type="image/svg+xml" href="https://avatars.githubusercontent.com/u/147170315?s=100" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>ProjectAlita</title>
-        <!-- alita_ui_config -->
+        <meta charset="UTF-8">
+        <base target="_top" href="/">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Vite App</title>
+        <script> window.__webview_public_path__ = "${publicPath}"</script>
+        <script type="module" crossorigin src="${mainPanelJsUri}"></script>
+        <link rel="stylesheet" href="${styleResetUri}">
+        <link rel="stylesheet" href="${styleVSCodeUri}">
+        <link rel="stylesheet" href="${styleMainUri}">
         <script type="module" crossorigin src="${mainPanelJsUri}"></script>
 			</head>
       <body>
         <div id="root"></div>
       </body>
-			</html>`;
-
-    //       <head>
-    //         <meta charset="UTF-8">
-
-    // <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
-
-    // <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    // <link href="${styleResetUri}" rel="stylesheet">
-    // <link href="${styleVSCodeUri}" rel="stylesheet">
-    // <link href="${styleMainUri}" rel="stylesheet">
-
-    // <title>Cat Colors</title>
-    //       </head>
-    // <body>
-    // 	<ul class="color-list">
-    // 	</ul>
-
-    // 	<button class="add-color-button">Add Color</button>
-
-    // 	<script nonce="${nonce}" src="${scriptUri}"></script>
-
-    // </body>
+    </html>`;
   }
 }
 

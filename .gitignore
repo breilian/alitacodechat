@@ -1,5 +1,6 @@
 node_modules/
-dist
+dist/
 *.vsix
 .idea
 .DS_Store
+**/node_modules/
