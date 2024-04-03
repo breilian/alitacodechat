@@ -6,11 +6,14 @@
   "engines": {
     "vscode": "^1.87.0"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "categories": [
     "Other"
   ],
   "activationEvents": [],
-  "main": "./extension.js",
+  "main": "./dist/extension.js",
   "contributes": {
     "viewsContainers": {
       "activitybar": [
@@ -38,18 +41,25 @@
     ]
   },
   "scripts": {
-    "lint": "eslint .",
-    "pretest": "npm run lint",
-    "test": "vscode-test"
+    "vsce": "npx vsce package",
+    "vscode:prepublish": "npm run package",
+    "package": "npm run build",
+    "build": "npx lerna run build",
+    "build-watch": "npm run build:extension:dev && npm run watch-all",
+    "build:extension:dev": "npx lerna run --scope alitacodechat build:dev --stream",
+    "watch-all": "concurrently --kill-others \"npm:watch:ui\" \"npm:watch:extension\" ",
+    "watch:ui": "npx lerna run --scope alitacodechat-ui watch:ui",
+    "watch:extension": "npx lerna run --scope alitacodechat watch"
   },
   "devDependencies": {
+    "concurrently": "^8.2.2",
     "@types/mocha": "^10.0.6",
     "@types/node": "18.x",
     "@types/vscode": "^1.87.0",
     "@vscode/test-cli": "^0.0.4",
     "@vscode/test-electron": "^2.3.9",
     "eslint": "^8.56.0",
-    "typescript": "^5.3.3"
+    "lerna": "^8.1.2"
   },
   "dependencies": {
     "html-modifier": "^1.2.0"

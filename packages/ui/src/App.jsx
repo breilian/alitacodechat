@@ -1,6 +1,4 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 import ChatBox from './components/ChatBox.jsx'
 
@@ -9,7 +7,7 @@ function App() {
 
   return (
     <>
-      <div className="card">
+      <div id='code-container'>
         <button onClick={() => setCount((count) => count + 1)}>
           count is {count}
         </button>

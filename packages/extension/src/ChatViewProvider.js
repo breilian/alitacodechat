@@ -1,10 +1,6 @@
 const vscode = require('vscode');
-const path = require('path')
-const fs = require('fs')
-const html_modifier = require('html-modifier');
 
-const chatViewBuildPath = 'ui';
-const WEBVIEW_INJECT_IN_MARK = '__webview_public_path__';
+const chatViewBuildPath = 'dist';
 class ChatViewProvider {
   constructor(
     _extensionUri,
@@ -54,19 +50,14 @@ class ChatViewProvider {
   }
 
   _getHtmlForWebview(webview) {
-    // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
-    // const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, chatViewBuildPath, 'main.js'));
-    const mainPanelJsUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, chatViewBuildPath, 'dist', 'main.js'));
+    const mainPanelJsUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, chatViewBuildPath, 'main.js'));
     const publicPath = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, chatViewBuildPath, 'dist'));
 
 
     // Do the same for the stylesheet.
-    const styleResetUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, chatViewBuildPath, 'dist', 'assets', 'index.css'));
-    const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, chatViewBuildPath, 'dist', 'assets', 'react.svg'));
-    const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, chatViewBuildPath, 'dist', 'assets', 'main.css'));
-
-    // Use a nonce to only allow a specific script to be run.
-    const nonce = getNonce();
+    const styleResetUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, chatViewBuildPath, 'assets', 'index.css'));
+    const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, chatViewBuildPath, 'assets', 'react.svg'));
+    const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'static', 'main.css'));
 
     return `<!DOCTYPE html>
 			<html lang="en">
@@ -74,9 +65,8 @@ class ChatViewProvider {
         <meta charset="UTF-8">
         <base target="_top" href="/">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Vite App</title>
+        <title>Alita Code Chat</title>
         <script> window.__webview_public_path__ = "${publicPath}"</script>
-        <script type="module" crossorigin src="${mainPanelJsUri}"></script>
         <link rel="stylesheet" href="${styleResetUri}">
         <link rel="stylesheet" href="${styleVSCodeUri}">
         <link rel="stylesheet" href="${styleMainUri}">
@@ -90,13 +80,5 @@ class ChatViewProvider {
 }
 
 ChatViewProvider.viewType = 'alitacodechat.view';
-function getNonce() {
-  let text = '';
-  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  for (let i = 0; i < 32; i++) {
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
-  }
-  return text;
-}
 
 module.exports = ChatViewProvider;
