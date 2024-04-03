@@ -1,22 +1,14 @@
-import { useState } from 'react'
+import { Box } from '@mui/material'
 import './App.css'
-import ChatBox from './components/ChatBox.jsx'
+import ChatBox from './components/ChatBox/ChatBox.jsx'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div id='code-container'>
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          <ChatBox/>
-        </p>
-      </div>
+      <Box width='100vw' height='100vh' display='flex' flexDirection='column' justifyContent='flex-end'>
+          <ChatBox 
+          />
+      </Box>
       
-    </>
   )
 }
 
