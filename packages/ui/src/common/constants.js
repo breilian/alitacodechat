@@ -605,3 +605,17 @@ export const sioEvents = {
   datasource_dataset_status: 'datasource_dataset_status',
   datasource_leave_rooms: 'datasource_leave_rooms'
 }
+
+
+export const VsCodeMessageTypes= {
+  getCompletion: 'extension.getCompletion',
+  getPrompts: 'extension.getPrompts'
+}
+
+export const UiMessageTypes = {
+  error: 'ui.error',
+  startLoading:'ui.startLoading',
+  stopLoading:'ui.stopLoading',
+  getPrompts: 'ui.getPrompts',
+  getCompletion: 'ui.getCompletion'
+}

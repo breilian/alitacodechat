@@ -62,17 +62,17 @@ export const ActionButton = styled(IconButton)(({ theme }) => (`
 
 export const ToggleButton = styled(IconButton,
   filterProps['isAutoScroll'])(({ theme, isAutoScroll }) => ({
-  width: '28px',
-  height: '28px',
-  background: isAutoScroll ?
-    theme.palette.background.categoriesButton.selected.active :
-    theme.palette.background.icon.default,
-  '&:hover': {
+    width: '28px',
+    height: '28px',
     background: isAutoScroll ?
-      theme.palette.background.categoriesButton.selected.hover :
-      undefined
-  }
-}));
+      theme.palette.background.categoriesButton.selected.active :
+      theme.palette.background.icon.default,
+    '&:hover': {
+      background: isAutoScroll ?
+        theme.palette.background.categoriesButton.selected.hover :
+        undefined
+    }
+  }));
 
 export const RunButton = styled(Button)(({ theme }) => (`
   display: flex;
@@ -170,8 +170,8 @@ export const StyledCircleProgress = styled(CircularProgress)(() => `
 
 export const MessageList = styled(List)(() => `
   width: 100%;
+  height: calc(100vh - 66px);
   flex-grow: 1;
-  height: 20.25rem;
   padding-left: 0.75rem;
   padding-right: 0.75rem;
   padding-top: 0.75rem;

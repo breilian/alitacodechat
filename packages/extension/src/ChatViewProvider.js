@@ -1,4 +1,5 @@
 const vscode = require('vscode');
+const { getAlitaService, VsCodeMessageTypes, UiMessageTypes } = require('./consts');
 
 const chatViewBuildPath = 'dist';
 class ChatViewProvider {
@@ -27,12 +28,65 @@ class ChatViewProvider {
 
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
-    webviewView.webview.onDidReceiveMessage(data => {
-      switch (data.type) {
-        case 'colorSelected': {
-          vscode.window.activeTextEditor.insertSnippet(new vscode.SnippetString(`#${data.value}`));
-          break;
+    webviewView.webview.onDidReceiveMessage(message => {
+      try {
+        const alitaService = getAlitaService()
+        switch (message.type) {
+          case 'getResponse': {
+            console.log("message:" + message);
+            this.sendMessageToWebView({
+              type: 'getResponse',
+              text: 'I\'m extension'
+            })
+            break;
+          }
+          case VsCodeMessageTypes.getPrompts: {
+            if (alitaService) {
+              this.startLoading()
+              alitaService.getPrompts().then(prompts => {
+                this.sendMessageToWebView({
+                  type: UiMessageTypes.getPrompts,
+                  data: prompts
+                })
+                this.stopLoading()
+              })
+            } else {
+              this.sendMessageToWebView({
+                type: UiMessageTypes.error,
+                message: 'Alita service not found'
+              })
+            }
+            break;
+          }
+          case VsCodeMessageTypes.getCompletion: {
+            if (alitaService) {
+              this.startLoading()
+              const data = {
+                prompt: message.data.prompt,
+                template: { external: false },
+                prompt_template: {
+                  chat_history: message.data.chat_history,
+                  display_type: 'chat',
+                },
+              }
+              alitaService.askAlita(data).then(res => {
+                this.sendMessageToWebView({
+                  type: UiMessageTypes.getCompletion,
+                  data: res
+                })
+                this.stopLoading()
+              })
+            } else {
+              this.sendMessageToWebView({
+                type: UiMessageTypes.error,
+                message: 'Alita service not found'
+              })
+            }
+            break;
+          }
         }
+      } catch (err) {
+        console.error(err)
       }
     });
   }
@@ -47,6 +101,23 @@ class ChatViewProvider {
     if (this._view) {
       this._view.webview.postMessage({ type: 'clearColors' });
     }
+  }
+
+
+  startLoading() {
+    this.sendMessageToWebView({
+      type: UiMessageTypes.startLoading,
+    })
+  }
+
+  stopLoading() {
+    this.sendMessageToWebView({
+      type: UiMessageTypes.stopLoading,
+    })
+  }
+
+  sendMessageToWebView(message) {
+    this._view.webview.postMessage(message)
   }
 
   _getHtmlForWebview(webview) {
@@ -80,5 +151,6 @@ class ChatViewProvider {
 }
 
 ChatViewProvider.viewType = 'alitacodechat.view';
+ChatViewProvider.toWebView = 'alitacodechat.toWebView';
 
 module.exports = ChatViewProvider;
