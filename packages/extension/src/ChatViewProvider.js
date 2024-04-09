@@ -58,6 +58,24 @@ class ChatViewProvider {
             }
             break;
           }
+          case VsCodeMessageTypes.getDatasources: {
+            if (alitaService) {
+              this.startLoading()
+              alitaService.getDatasources().then(data => {
+                this.sendMessageToWebView({
+                  type: UiMessageTypes.getDatasources,
+                  data
+                })
+                this.stopLoading()
+              })
+            } else {
+              this.sendMessageToWebView({
+                type: UiMessageTypes.error,
+                message: 'Alita service not found'
+              })
+            }
+            break;
+          }
           case VsCodeMessageTypes.getCompletion: {
             if (alitaService) {
               this.startLoading()

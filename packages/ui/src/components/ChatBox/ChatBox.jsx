@@ -22,6 +22,7 @@ const ChatBox = forwardRef(({
   chatHistory = [],
   setChatHistory = () => { },
   prompts,
+  datasources,
 }, boxRef) => {
   console.log('postMessageToVsCode', postMessageToVsCode)
   const chatInput = useRef(null);
@@ -141,6 +142,7 @@ const ChatBox = forwardRef(({
               isLoading={isLoading}
               disabledSend={isLoading}
               prompts={prompts}
+              datasources={datasources}
               shouldHandleEnter />
           }
         </ChatBodyContainer>

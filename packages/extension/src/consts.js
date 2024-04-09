@@ -18,7 +18,8 @@ const getAlitaService = () => {
 
 const VsCodeMessageTypes = {
   getCompletion: 'extension.getCompletion',
-  getPrompts: 'extension.getPrompts'
+  getPrompts: 'extension.getPrompts',
+  getDatasources: 'extension.getDatasources'
 }
 
 const UiMessageTypes = {
@@ -26,6 +27,7 @@ const UiMessageTypes = {
   startLoading: 'ui.startLoading',
   stopLoading: 'ui.stopLoading',
   getPrompts: 'ui.getPrompts',
+  getDatasources: 'ui.getDatasources',
   getCompletion: 'ui.getCompletion'
 }
 

@@ -609,13 +609,15 @@ export const sioEvents = {
 
 export const VsCodeMessageTypes= {
   getCompletion: 'extension.getCompletion',
-  getPrompts: 'extension.getPrompts'
+  getPrompts: 'extension.getPrompts',
+  getDatasources: 'extension.getDatasources'
 }
 
 export const UiMessageTypes = {
   error: 'ui.error',
-  startLoading:'ui.startLoading',
-  stopLoading:'ui.stopLoading',
+  startLoading: 'ui.startLoading',
+  stopLoading: 'ui.stopLoading',
   getPrompts: 'ui.getPrompts',
+  getDatasources: 'ui.getDatasources',
   getCompletion: 'ui.getCompletion'
 }

@@ -101,17 +101,22 @@ export const ChatBodyContainer = styled(Box)(() => `
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.5rem;
   flex: 1 0 0;
   flex-grow: 1;
   align-self: stretch;
-
   position: relative;
-
-  
 `);
 // border-radius: 0.5rem;
-  // border: 1px solid ${theme.palette.border.activeBG};
+// border: 1px solid ${theme.palette.border.activeBG};
+
+export const ParticipantContainer = styled(Box)(({ theme }) => ({
+  padding: '8px 12px' ,
+  display: 'flex' ,
+  alignItems: 'center',
+  gap: '8px',
+  width: '100%',
+  borderTop: `1px solid ${theme.palette.border.activeBG}`,
+}))
 
 export const ChatInputContainer = styled(Box)(({ theme }) => `
   display: flex;

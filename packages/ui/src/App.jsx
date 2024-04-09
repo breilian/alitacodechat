@@ -11,6 +11,7 @@ function App() {
   const [chatHistory, setChatHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [prompts, setPrompts] = useState([]);
+  const [datasources, setDatasources] = useState([]);
   const vscodeRef = useRef(null);
 
   useEffect(() => {
@@ -24,6 +25,9 @@ function App() {
       vscodeRef.current = vscode;
       vscode.postMessage({
         type: VsCodeMessageTypes.getPrompts,
+      });
+      vscode.postMessage({
+        type: VsCodeMessageTypes.getDatasources,
       });
     }
   }, []);
@@ -42,6 +46,9 @@ function App() {
           break;
         case UiMessageTypes.getPrompts:
           setPrompts(message.data.rows);
+          break;
+        case UiMessageTypes.getDatasources:
+          setDatasources(message.data.rows);
           break;
         case UiMessageTypes.getCompletion:
           setChatHistory(prev => [...prev, message.data]);
@@ -64,6 +71,7 @@ function App() {
         setChatHistory={setChatHistory}
         isLoading={isLoading}
         prompts={prompts}
+        datasources={datasources}
       />
     </Box>
 

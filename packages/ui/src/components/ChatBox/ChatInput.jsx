@@ -3,6 +3,7 @@ import IconButton from '@mui/material/IconButton';
 import { forwardRef, useCallback, useEffect, useState, useImperativeHandle } from 'react';
 import SendIcon from '@/components/Icons/SendIcon';
 import CommandIcon from '@/components/Icons/CommandIcon';
+import DatabaseIcon from '@/components/Icons/DatabaseIcon';
 import {
   ChatInputContainer,
   SendButton,
@@ -10,7 +11,8 @@ import {
   StyledCircleProgress,
   StyledTextField,
   StyledUnfoldLessIcon,
-  StyledUnfoldMoreIcon
+  StyledUnfoldMoreIcon,
+  ParticipantContainer
 } from '@/components/ChatBox/StyledComponents';
 import { useCtrlEnterKeyEventsHandler } from '@/components/ChatBox/hooks';
 import { useRef } from 'react';
@@ -20,25 +22,25 @@ const MAX_ROWS = 15;
 const MIN_ROWS = 3;
 const MIN_HEIGHT = 70;
 
-const PromptPopper = ({
+const OptionPopper = ({
   anchorEl,
   setAnchorEl,
-  prompts,
+  options,
   handleSelect,
 }) => {
   const handleClickAway = useCallback(() => {
     setAnchorEl(null);
   }, [setAnchorEl]);
 
-  const handleSelectClose = useCallback(prompt => () => {
-    handleSelect(prompt)()
+  const handleSelectClose = useCallback(option => () => {
+    handleSelect(option)()
     handleClickAway();
   }, [handleClickAway, handleSelect])
 
   const open = Boolean(anchorEl);
   const id = open ? 'simple-popper' : undefined;
 
-  console.log('prompts', prompts)
+  console.log('prompts', options)
   return (
     <ClickAwayListener onClickAway={handleClickAway} >
       <Popper
@@ -49,9 +51,9 @@ const PromptPopper = ({
       >
         <Box sx={{ border: 1, p: 1, bgcolor: 'background.paper' }}>
           {
-            (prompts || []).map((prompt, i) => {
+            (options || []).map((option, i) => {
               return (
-                <MenuItem key={i} onClick={handleSelectClose(prompt)}>{prompt.name}</MenuItem>
+                <MenuItem key={i} onClick={handleSelectClose(option)}>{option.name}</MenuItem>
               )
             })
           }
@@ -63,6 +65,7 @@ const PromptPopper = ({
 
 const ChatInput = forwardRef(function ChatInput(props, ref) {
   const {
+    datasources,
     prompts,
     onSend,
     isLoading,
@@ -77,17 +80,16 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
   const [showExpandIcon, setShowExpandIcon] = useState(false);
   const [rows, setRows] = useState(MAX_ROWS);
 
-
-
   const reset = useCallback(() => {
     setInputContent('');
     setQuestion('');
     setShowExpandIcon(false);
   }, [])
-  const [selectedPrompt, setSelectedPrompt] = useState(null);
-  const [filteredPrompts, setFilteredPrompts] = useState(prompts);
-  const handleSelectPrompt = useCallback((prompt) => () => {
-    setSelectedPrompt(prompt);
+  const [optionType, setOptionType] = useState('');
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [filteredOptions, setFilteredOptions] = useState([]);
+  const handleSelectOption = useCallback((option) => () => {
+    setSelectedOption(option);
     reset();
   }, [reset]);
 
@@ -114,21 +116,24 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
   const onInputQuestion = useCallback(
     (event) => {
       const value = event.target.value;
-      if (value.startsWith('/')) {
+      const isPrompt = value.startsWith('/');
+      const isDatasource = value.startsWith('#');
+      if (isPrompt || isDatasource) {
         const filterString = value.substring(1).toLowerCase()
-        const selectedPrompts = prompts.filter((prompt) => prompt.name.toLowerCase().startsWith(filterString))
-        setFilteredPrompts(selectedPrompts.length ? selectedPrompts : prompts)
-        console.log('selectedPrompts: ', selectedPrompts)
+        const options = isPrompt ? prompts : datasources
+        const optionList = options.filter((item) => item.name.toLowerCase().startsWith(filterString))
+        setFilteredOptions(optionList.length ? optionList : options)
+        setOptionType(isPrompt ? 'prompt' : 'datasource')
         setAnchorEl(chatInputRef.current)
       } else {
         setAnchorEl(null)
-        setFilteredPrompts(prompts)
+        setFilteredOptions(prompts)
       }
       setInputContent(value);
       setQuestion(value?.trim() ? value : '');
       setShowExpandIcon(event.target.offsetHeight > MIN_HEIGHT);
     },
-    [prompts],
+    [datasources, prompts],
   );
 
   const onCtrlEnterDown = useCallback(() => {
@@ -138,7 +143,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
 
   const onEnterDown = useCallback(() => {
     if (question.trim() && !disabledSend) {
-      onSend(question, selectedPrompt.id);
+      onSend(question, selectedOption.id);
       if (clearInputAfterSubmit) {
         setTimeout(() => {
           setInputContent('');
@@ -147,7 +152,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
         setShowExpandIcon(false);
       }
     }
-  }, [question, disabledSend, onSend, selectedPrompt, clearInputAfterSubmit]);
+  }, [question, disabledSend, onSend, selectedOption, clearInputAfterSubmit]);
 
   const { onKeyDown, onKeyUp, onCompositionStart, onCompositionEnd } = useCtrlEnterKeyEventsHandler({
     onCtrlEnterDown,
@@ -163,16 +168,19 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
   return (
     <>
 
-      <Box padding='0 12px' display='flex' alignItems='center' gap='8px'>
-        {selectedPrompt && <CommandIcon fontSize="1rem" />}
-        <Box>{selectedPrompt?.name}</Box>
-        <PromptPopper
-          anchorEl={anchorEl}
-          setAnchorEl={setAnchorEl}
-          prompts={filteredPrompts}
-          handleSelect={handleSelectPrompt}
-        />
-      </Box>
+      {selectedOption &&
+        <ParticipantContainer >
+          {optionType === 'prompt' && <CommandIcon fontSize="1rem" />}
+          {optionType === 'datasource' && <DatabaseIcon fontSize="1rem" />}
+          <Box>{selectedOption?.name}</Box>
+        </ParticipantContainer>}
+        
+      <OptionPopper
+        anchorEl={anchorEl}
+        setAnchorEl={setAnchorEl}
+        options={filteredOptions}
+        handleSelect={handleSelectOption}
+      />
 
       <ChatInputContainer sx={sx} ref={chatInputRef}>
         <Box sx={{ flex: 1, marginRight: 1 }}>
