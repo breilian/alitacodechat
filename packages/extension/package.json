@@ -10,7 +10,7 @@
     "build": "webpack --env mode=$NODE_ENV --devtool hidden-source-map",
     "build:dev": "webpack --env mode=development",
     "watch": "webpack --env mode=development --env watch=true",
-    "lint": "eslint src --ext ts"
+    "lint": "eslint src --ext js  --max-warnings 0"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.6.7",

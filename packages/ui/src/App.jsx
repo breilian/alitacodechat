@@ -1,10 +1,9 @@
-import { Box } from '@mui/material'
-import './App.css'
-import ChatBox from './components/ChatBox/ChatBox.jsx'
-import { useState } from 'react';
-import { useEffect } from 'react';
+/* eslint-disable no-console */
+import { Box } from '@mui/material';
+import { useEffect, useRef, useState } from 'react';
+import './App.css';
 import { UiMessageTypes, VsCodeMessageTypes } from './common/constants.js';
-import { useRef } from 'react';
+import ChatBox from './components/ChatBox/ChatBox.jsx';
 
 
 function App() {

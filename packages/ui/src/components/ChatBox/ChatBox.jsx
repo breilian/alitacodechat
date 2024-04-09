@@ -1,19 +1,19 @@
-import { forwardRef } from "react";
+/* eslint-disable react/jsx-no-bind */
+/* eslint-disable no-console */
+/* eslint-disable no-unused-vars */
+import { ROLES, VsCodeMessageTypes } from '@/common/constants';
+import { forwardRef, useCallback, useRef, useState } from "react";
+import AlertDialog from '../AlertDialog';
+import Toast from '../Toast';
+import AIAnswer from './AIAnswer';
 import ChatInput from './ChatInput';
 import {
   ChatBodyContainer,
   ChatBoxContainer,
   MessageList
 } from './StyledComponents';
-import { ROLES } from "../../common/constants";
-
-import { VsCodeMessageTypes } from '@/common/constants';
 import UserMessage from "./UserMessage";
-import AIAnswer from './AIAnswer'
-import { useCallback, useRef, useState } from "react";
-import Toast from '../Toast';
-import AlertDialog from '../AlertDialog';
-import useDeleteMessageAlert from './useDeleteMessageAlert'
+import useDeleteMessageAlert from './useDeleteMessageAlert';
 
 const ChatBox = forwardRef(({
   messageListSX,
@@ -112,7 +112,6 @@ const ChatBox = forwardRef(({
                     ref={(ref) => (listRefs.current[index] = ref)}
                     content={message.content}
                     onCopy={onCopyToClipboard(message.id)}
-                    onCopyToMessages={() => { }}
                     onDelete={onDeleteAnswer(message.id)}
                   />
                   :
@@ -122,9 +121,7 @@ const ChatBox = forwardRef(({
                     answer={message.content}
                     onStop={onStopStreaming(message.id)}
                     onCopy={onCopyToClipboard(message.id)}
-                    onCopyToMessages={() => { }}
                     onDelete={onDeleteAnswer(message.id)}
-                    onRegenerate={() => { }}
                     shouldDisableRegenerate={isLoading}
                     references={message.references}
                     isLoading={Boolean(message.isLoading)}

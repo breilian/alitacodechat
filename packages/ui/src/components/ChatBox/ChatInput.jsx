@@ -1,21 +1,20 @@
-import { Box, useTheme, Popper, MenuItem, Button, ClickAwayListener } from '@mui/material';
-import IconButton from '@mui/material/IconButton';
-import { forwardRef, useCallback, useEffect, useState, useImperativeHandle } from 'react';
-import SendIcon from '@/components/Icons/SendIcon';
-import CommandIcon from '@/components/Icons/CommandIcon';
-import DatabaseIcon from '@/components/Icons/DatabaseIcon';
 import {
   ChatInputContainer,
+  ParticipantContainer,
   SendButton,
   SendButtonContainer,
   StyledCircleProgress,
   StyledTextField,
   StyledUnfoldLessIcon,
-  StyledUnfoldMoreIcon,
-  ParticipantContainer
+  StyledUnfoldMoreIcon
 } from '@/components/ChatBox/StyledComponents';
 import { useCtrlEnterKeyEventsHandler } from '@/components/ChatBox/hooks';
-import { useRef } from 'react';
+import CommandIcon from '@/components/Icons/CommandIcon';
+import DatabaseIcon from '@/components/Icons/DatabaseIcon';
+import SendIcon from '@/components/Icons/SendIcon';
+import { Box, ClickAwayListener, MenuItem, Popper, useTheme } from '@mui/material';
+import IconButton from '@mui/material/IconButton';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
 
 const MAX_ROWS = 15;
@@ -40,7 +39,6 @@ const OptionPopper = ({
   const open = Boolean(anchorEl);
   const id = open ? 'simple-popper' : undefined;
 
-  console.log('prompts', options)
   return (
     <ClickAwayListener onClickAway={handleClickAway} >
       <Popper
@@ -174,7 +172,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
           {optionType === 'datasource' && <DatabaseIcon fontSize="1rem" />}
           <Box>{selectedOption?.name}</Box>
         </ParticipantContainer>}
-        
+
       <OptionPopper
         anchorEl={anchorEl}
         setAnchorEl={setAnchorEl}
