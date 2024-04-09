@@ -41,7 +41,7 @@ function App() {
           setIsLoading(false);
           break;
         case UiMessageTypes.getPrompts:
-          setPrompts(message.data);
+          setPrompts(message.data.rows);
           break;
         case UiMessageTypes.getCompletion:
           setChatHistory(prev => [...prev, message.data]);
@@ -63,6 +63,7 @@ function App() {
         chatHistory={chatHistory}
         setChatHistory={setChatHistory}
         isLoading={isLoading}
+        prompts={prompts}
       />
     </Box>
 

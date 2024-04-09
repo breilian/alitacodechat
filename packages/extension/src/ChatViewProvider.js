@@ -61,12 +61,14 @@ class ChatViewProvider {
           case VsCodeMessageTypes.getCompletion: {
             if (alitaService) {
               this.startLoading()
+              const { prompt_id } = message.data
               const data = {
                 prompt: message.data.prompt,
-                template: { external: false },
+                template: { external: prompt_id ? true :false },
                 prompt_template: {
                   chat_history: message.data.chat_history,
                   display_type: 'chat',
+                  prompt_id,
                 },
               }
               alitaService.askAlita(data).then(res => {

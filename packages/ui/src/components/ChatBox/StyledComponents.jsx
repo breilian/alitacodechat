@@ -97,7 +97,7 @@ export const RunButton = styled(Button)(({ theme }) => (`
 
 `));
 
-export const ChatBodyContainer = styled(Box)(({ theme }) => `
+export const ChatBodyContainer = styled(Box)(() => `
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -108,9 +108,10 @@ export const ChatBodyContainer = styled(Box)(({ theme }) => `
 
   position: relative;
 
-  border-radius: 0.5rem;
-  border: 1px solid ${theme.palette.border.activeBG};
+  
 `);
+// border-radius: 0.5rem;
+  // border: 1px solid ${theme.palette.border.activeBG};
 
 export const ChatInputContainer = styled(Box)(({ theme }) => `
   display: flex;
@@ -170,7 +171,7 @@ export const StyledCircleProgress = styled(CircularProgress)(() => `
 
 export const MessageList = styled(List)(() => `
   width: 100%;
-  height: calc(100vh - 66px);
+  height: calc(100vh - 132px);
   flex-grow: 1;
   padding-left: 0.75rem;
   padding-right: 0.75rem;
