@@ -50,7 +50,10 @@ function App() {
           setDatasources(message.data.rows);
           break;
         case UiMessageTypes.getCompletion:
-          setChatHistory(prev => [...prev, message.data]);
+          setChatHistory(prev => [...prev, {
+            ...message.data,
+            id: new Date().getTime()
+          }]);
           break;
       }
     }
