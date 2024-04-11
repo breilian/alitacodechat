@@ -2,7 +2,7 @@
 import { Box } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 import './App.css';
-import { UiMessageTypes, VsCodeMessageTypes } from './common/constants.js';
+import { ROLES, UiMessageTypes, VsCodeMessageTypes } from './common/constants.js';
 import ChatBox from './components/ChatBox/ChatBox.jsx';
 
 
@@ -37,6 +37,9 @@ function App() {
       const message = event.data;
       console.log("message from vs code: ", message);
       switch (message.type) {
+        case UiMessageTypes.error:
+          console.error(message.message);
+          break;
         case UiMessageTypes.startLoading:
           setIsLoading(true);
           break;
@@ -49,10 +52,11 @@ function App() {
         case UiMessageTypes.getDatasources:
           setDatasources(message.data.rows);
           break;
-        case UiMessageTypes.getCompletion:
+        case UiMessageTypes.getChatResponse:
           setChatHistory(prev => [...prev, {
             ...message.data,
-            id: new Date().getTime()
+            id: new Date().getTime(),
+            role: ROLES.Assistant,
           }]);
           break;
       }

@@ -29,25 +29,24 @@ const ChatBox = forwardRef(({
   const listRefs = useRef([]);
   const messagesEndRef = useRef();
   // Message Sending to Extension
-  const onSend = useCallback((question, prompt_id) => {
+  const onSend = useCallback((data) => {
+    postMessageToVsCode && postMessageToVsCode({
+      type: VsCodeMessageTypes.getChatResponse,
+      data: {
+        ...data,
+        chat_history: chatHistory,
+      }
+    });
     setChatHistory((prevMessages) => {
       return [...prevMessages, {
+        ...data,
         id: new Date().getTime(),
         role: ROLES.User,
         name: 'User',
-        content: question,
-        prompt_id: prompt_id ?? undefined
+        content: data.user_input,
       }]
     })
-    postMessageToVsCode && postMessageToVsCode({
-      type: VsCodeMessageTypes.getCompletion,
-      data: {
-        prompt: question,
-        chat_history: [],
-        prompt_id: prompt_id ?? undefined
-      }
-    });
-  }, [postMessageToVsCode, setChatHistory]);
+  }, [chatHistory, postMessageToVsCode, setChatHistory]);
 
 
 
@@ -88,17 +87,6 @@ const ChatBox = forwardRef(({
 
   return (
     <>
-    <div>
-      {
-        chatHistory.map((message, index) => {
-          return (
-            <div
-              key={message.id}
-            >{index}: {message.id}</div>
-          )
-        })
-      }
-    </div>
       <ChatBoxContainer
         role="presentation"
       >

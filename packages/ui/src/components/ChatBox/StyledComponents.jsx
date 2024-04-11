@@ -113,7 +113,7 @@ export const ParticipantContainer = styled(Box)(({ theme }) => ({
   padding: '8px 12px' ,
   display: 'flex' ,
   alignItems: 'center',
-  gap: '8px',
+  justifyContent: 'space-between',
   width: '100%',
   borderTop: `1px solid ${theme.palette.border.activeBG}`,
 }))

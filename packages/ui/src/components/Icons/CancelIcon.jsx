@@ -3,7 +3,7 @@ import { useTheme } from '@mui/material/styles';
 export default function CancelIcon(props) {
   const theme = useTheme();
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width='18' height='18' viewBox="0 0 18 18"
+    <svg xmlns="http://www.w3.org/2000/svg" width='16' height='16' viewBox="0 0 16 16"
       fill={theme.palette.icon.fill.primary}
       {...props}
     >

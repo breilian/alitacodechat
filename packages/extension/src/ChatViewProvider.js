@@ -29,80 +29,20 @@ class ChatViewProvider {
 
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
-    webviewView.webview.onDidReceiveMessage(message => {
+    webviewView.webview.onDidReceiveMessage((message) => {
       try {
         const alitaService = getAlitaService()
         switch (message.type) {
-          case 'getResponse': {
-            console.log("message:" + message);
-            this.sendMessageToWebView({
-              type: 'getResponse',
-              text: 'I\'m extension'
-            })
-            break;
-          }
           case VsCodeMessageTypes.getPrompts: {
-            if (alitaService) {
-              this.startLoading()
-              alitaService.getPrompts().then(prompts => {
-                this.sendMessageToWebView({
-                  type: UiMessageTypes.getPrompts,
-                  data: prompts
-                })
-                this.stopLoading()
-              })
-            } else {
-              this.sendMessageToWebView({
-                type: UiMessageTypes.error,
-                message: 'Alita service not found'
-              })
-            }
+            this.getResponse(alitaService, 'getPrompts')
             break;
           }
           case VsCodeMessageTypes.getDatasources: {
-            if (alitaService) {
-              this.startLoading()
-              alitaService.getDatasources().then(data => {
-                this.sendMessageToWebView({
-                  type: UiMessageTypes.getDatasources,
-                  data
-                })
-                this.stopLoading()
-              })
-            } else {
-              this.sendMessageToWebView({
-                type: UiMessageTypes.error,
-                message: 'Alita service not found'
-              })
-            }
+            this.getResponse(alitaService, 'getDatasources')
             break;
           }
-          case VsCodeMessageTypes.getCompletion: {
-            if (alitaService) {
-              this.startLoading()
-              const { prompt_id } = message.data
-              const data = {
-                prompt: message.data.prompt,
-                template: { external: prompt_id ? true :false },
-                prompt_template: {
-                  chat_history: message.data.chat_history,
-                  display_type: 'chat',
-                  prompt_id,
-                },
-              }
-              alitaService.askAlita(data).then(res => {
-                this.sendMessageToWebView({
-                  type: UiMessageTypes.getCompletion,
-                  data: res
-                })
-                this.stopLoading()
-              })
-            } else {
-              this.sendMessageToWebView({
-                type: UiMessageTypes.error,
-                message: 'Alita service not found'
-              })
-            }
+          case VsCodeMessageTypes.getChatResponse: {
+            this.getResponse(alitaService, 'chat', message.data, 'getChatResponse')
             break;
           }
         }
@@ -139,6 +79,30 @@ class ChatViewProvider {
 
   sendMessageToWebView(message) {
     this._view.webview.postMessage(message)
+  }
+
+  getResponse (alitaService, operation, params, messageType) {
+    if (alitaService) {
+      this.startLoading()
+      alitaService[operation](params).then(data => {
+        this.sendMessageToWebView({
+          type: UiMessageTypes[messageType || operation],
+          data,
+        })
+        this.stopLoading()
+      }).catch(err => {
+        this.sendMessageToWebView({
+          type: UiMessageTypes.error,
+          message: err
+        })
+        this.stopLoading()
+      })
+    } else {
+      this.sendMessageToWebView({
+        type: UiMessageTypes.error,
+        message: 'Alita service not found'
+      })
+    }
   }
 
   _getHtmlForWebview(webview) {

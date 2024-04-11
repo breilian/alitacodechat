@@ -12,54 +12,18 @@ import { useCtrlEnterKeyEventsHandler } from '@/components/ChatBox/hooks';
 import CommandIcon from '@/components/Icons/CommandIcon';
 import DatabaseIcon from '@/components/Icons/DatabaseIcon';
 import SendIcon from '@/components/Icons/SendIcon';
-import { Box, ClickAwayListener, MenuItem, Popper, useTheme } from '@mui/material';
+import { Box, useTheme } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import OptionPopper from './OptionPopper';
+import CancelIcon from '../Icons/CancelIcon';
 
 
 const MAX_ROWS = 15;
 const MIN_ROWS = 3;
 const MIN_HEIGHT = 70;
-
-const OptionPopper = ({
-  anchorEl,
-  setAnchorEl,
-  options,
-  handleSelect,
-}) => {
-  const handleClickAway = useCallback(() => {
-    setAnchorEl(null);
-  }, [setAnchorEl]);
-
-  const handleSelectClose = useCallback(option => () => {
-    handleSelect(option)()
-    handleClickAway();
-  }, [handleClickAway, handleSelect])
-
-  const open = Boolean(anchorEl);
-  const id = open ? 'simple-popper' : undefined;
-
-  return (
-    <ClickAwayListener onClickAway={handleClickAway} >
-      <Popper
-        id={id}
-        open={open}
-        anchorEl={anchorEl}
-        placement='top-start'
-      >
-        <Box sx={{ border: 1, p: 1, bgcolor: 'background.paper' }}>
-          {
-            (options || []).map((option, i) => {
-              return (
-                <MenuItem key={i} onClick={handleSelectClose(option)}>{option.name}</MenuItem>
-              )
-            })
-          }
-        </Box>
-      </Popper>
-    </ClickAwayListener>
-  );
-}
+const PROMPT_ID_KEY = 'prompt_id';
+const DATASOURCE_ID_KEY = 'datasource_id';
 
 const ChatInput = forwardRef(function ChatInput(props, ref) {
   const {
@@ -83,7 +47,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
     setQuestion('');
     setShowExpandIcon(false);
   }, [])
-  const [optionType, setOptionType] = useState('');
+  const [idKey, setIdKey] = useState();
   const [selectedOption, setSelectedOption] = useState(null);
   const [filteredOptions, setFilteredOptions] = useState([]);
   const handleSelectOption = useCallback((option) => () => {
@@ -111,6 +75,14 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
 
   const chatInputRef = useRef(null);
   const [anchorEl, setAnchorEl] = useState(null);
+
+  const onDeleteChatWith = useCallback(() => {
+    setIdKey(undefined);
+    setAnchorEl(null);
+    setFilteredOptions([]);
+    setSelectedOption(null);
+  }, []);
+
   const onInputQuestion = useCallback(
     (event) => {
       const value = event.target.value;
@@ -121,11 +93,11 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
         const options = isPrompt ? prompts : datasources
         const optionList = options.filter((item) => item.name.toLowerCase().startsWith(filterString))
         setFilteredOptions(optionList.length ? optionList : options)
-        setOptionType(isPrompt ? 'prompt' : 'datasource')
+        setIdKey(isPrompt ? PROMPT_ID_KEY : DATASOURCE_ID_KEY)
         setAnchorEl(chatInputRef.current)
       } else {
-        setAnchorEl(null)
-        setFilteredOptions(prompts)
+        setAnchorEl(null);
+        setFilteredOptions([]);
       }
       setInputContent(value);
       setQuestion(value?.trim() ? value : '');
@@ -141,7 +113,11 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
 
   const onEnterDown = useCallback(() => {
     if (question.trim() && !disabledSend) {
-      onSend(question, selectedOption.id);
+      const sendData = { user_input: question };
+      if (idKey && selectedOption) {
+        sendData[idKey] = selectedOption.id
+      }
+      onSend(sendData);
       if (clearInputAfterSubmit) {
         setTimeout(() => {
           setInputContent('');
@@ -150,7 +126,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
         setShowExpandIcon(false);
       }
     }
-  }, [question, disabledSend, onSend, selectedOption, clearInputAfterSubmit]);
+  }, [question, disabledSend, idKey, selectedOption, onSend, clearInputAfterSubmit]);
 
   const { onKeyDown, onKeyUp, onCompositionStart, onCompositionEnd } = useCtrlEnterKeyEventsHandler({
     onCtrlEnterDown,
@@ -165,12 +141,19 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
 
   return (
     <>
-
       {selectedOption &&
         <ParticipantContainer >
-          {optionType === 'prompt' && <CommandIcon fontSize="1rem" />}
-          {optionType === 'datasource' && <DatabaseIcon fontSize="1rem" />}
-          <Box>{selectedOption?.name}</Box>
+          <Box display='flex' alignItems='center' gap='8px'>
+            {idKey === PROMPT_ID_KEY && <CommandIcon fontSize="1rem" />}
+            {idKey === DATASOURCE_ID_KEY && <DatabaseIcon fontSize="1rem" />}
+            <Box>{selectedOption?.name}</Box>
+          </Box>
+          <IconButton
+            size='small'
+            onClick={onDeleteChatWith}
+          >
+            <CancelIcon />
+          </IconButton>
         </ParticipantContainer>}
 
       <OptionPopper

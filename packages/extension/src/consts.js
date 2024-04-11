@@ -17,7 +17,7 @@ const getAlitaService = () => {
 }
 
 const VsCodeMessageTypes = {
-  getCompletion: 'extension.getCompletion',
+  getChatResponse: 'extension.getChatResponse',
   getPrompts: 'extension.getPrompts',
   getDatasources: 'extension.getDatasources'
 }
@@ -28,7 +28,7 @@ const UiMessageTypes = {
   stopLoading: 'ui.stopLoading',
   getPrompts: 'ui.getPrompts',
   getDatasources: 'ui.getDatasources',
-  getCompletion: 'ui.getCompletion'
+  getChatResponse: 'ui.getChatResponse'
 }
 
 module.exports = {
