@@ -14,28 +14,33 @@ import DatabaseIcon from '@/components/Icons/DatabaseIcon';
 import SendIcon from '@/components/Icons/SendIcon';
 import { Box, useTheme } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, useCallback, useContext, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import OptionPopper from './OptionPopper';
 import CancelIcon from '../Icons/CancelIcon';
+import { ChatTypes, UiMessageTypes, VsCodeMessageTypes } from '@/common/constants';
+import DataContext from '@/context/DataContext';
 
 
 const MAX_ROWS = 15;
 const MIN_ROWS = 3;
 const MIN_HEIGHT = 70;
-const PROMPT_ID_KEY = 'prompt_id';
-const DATASOURCE_ID_KEY = 'datasource_id';
 
 const ChatInput = forwardRef(function ChatInput(props, ref) {
   const {
-    datasources,
-    prompts,
     onSend,
     isLoading,
     disabledSend,
     sx,
     placeholder = 'Type your message',
-    clearInputAfterSubmit = true
+    clearInputAfterSubmit = true,
+    chatWith,
+    setChatWith
   } = props;
+  const {
+    datasources,
+    prompts,
+    postMessageToVsCode,
+  } = useContext(DataContext);
   const theme = useTheme();
   const [question, setQuestion] = useState('');
   const [inputContent, setInputContent] = useState('');
@@ -47,7 +52,6 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
     setQuestion('');
     setShowExpandIcon(false);
   }, [])
-  const [idKey, setIdKey] = useState();
   const [selectedOption, setSelectedOption] = useState(null);
   const [filteredOptions, setFilteredOptions] = useState([]);
   const handleSelectOption = useCallback((option) => () => {
@@ -66,6 +70,45 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
     }
   }));
 
+  const [participantDetail, setParticipantDetail] = useState(null);
+
+  useEffect(() => {
+    if (postMessageToVsCode && selectedOption) {
+      if (chatWith) {
+        const type = chatWith === ChatTypes.prompt ?
+          VsCodeMessageTypes.getPromptDetail :
+          VsCodeMessageTypes.getDatasourceDetail
+        postMessageToVsCode({
+          type,
+          data: selectedOption.id
+        });
+      }
+    } else {
+      setParticipantDetail(null);
+    }
+  }, [chatWith, postMessageToVsCode, selectedOption]);
+
+  // Message Receiving from Extension
+  useEffect(() => {
+    const messageHandler = event => {
+      const message = event.data;
+      switch (message.type) {
+        case UiMessageTypes.getPromptDetail:
+          setParticipantDetail(message.data);
+          break;
+        case UiMessageTypes.getDatasourceDetail:
+          setParticipantDetail(message.data);
+          break;
+      }
+    }
+
+    window.addEventListener('message', messageHandler);
+
+    return () => {
+      window.removeEventListener('message', messageHandler);
+    };
+  }, []);
+
   const onClickExpander = useCallback(
     () => {
       setRows((prevRows) => prevRows === MAX_ROWS ? MIN_ROWS : MAX_ROWS);
@@ -77,11 +120,11 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
   const [anchorEl, setAnchorEl] = useState(null);
 
   const onDeleteChatWith = useCallback(() => {
-    setIdKey(undefined);
+    setChatWith(undefined);
     setAnchorEl(null);
     setFilteredOptions([]);
     setSelectedOption(null);
-  }, []);
+  }, [setChatWith]);
 
   const onInputQuestion = useCallback(
     (event) => {
@@ -93,7 +136,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
         const options = isPrompt ? prompts : datasources
         const optionList = options.filter((item) => item.name.toLowerCase().startsWith(filterString))
         setFilteredOptions(optionList.length ? optionList : options)
-        setIdKey(isPrompt ? PROMPT_ID_KEY : DATASOURCE_ID_KEY)
+        setChatWith(isPrompt ? ChatTypes.prompt : ChatTypes.datasource)
         setAnchorEl(chatInputRef.current)
       } else {
         setAnchorEl(null);
@@ -103,7 +146,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
       setQuestion(value?.trim() ? value : '');
       setShowExpandIcon(event.target.offsetHeight > MIN_HEIGHT);
     },
-    [datasources, prompts],
+    [datasources, prompts, setChatWith],
   );
 
   const onCtrlEnterDown = useCallback(() => {
@@ -114,8 +157,22 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
   const onEnterDown = useCallback(() => {
     if (question.trim() && !disabledSend) {
       const sendData = { user_input: question };
-      if (idKey && selectedOption) {
-        sendData[idKey] = selectedOption.id
+      if (chatWith && selectedOption && participantDetail) {
+        const latestVersionId = participantDetail.versions.find(v => v.name === 'latest')?.id
+        if (latestVersionId) {
+          sendData.currentVersionId = latestVersionId
+        }
+        if (chatWith === ChatTypes.prompt) {
+          sendData.prompt_id = selectedOption.id
+        } else if (chatWith === ChatTypes.datasource) {
+          sendData.datasource_id = selectedOption.id
+          const chatSettings = participantDetail.version_details?.datasource_settings?.chat
+          if (chatSettings) {
+            sendData.context = participantDetail.version_details?.context
+            sendData.chat_settings_embedding = chatSettings.chat_settings_embedding
+            sendData.chat_settings_ai = chatSettings.chat_settings_ai
+          }
+        }
       }
       onSend(sendData);
       if (clearInputAfterSubmit) {
@@ -126,7 +183,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
         setShowExpandIcon(false);
       }
     }
-  }, [question, disabledSend, idKey, selectedOption, onSend, clearInputAfterSubmit]);
+  }, [question, disabledSend, chatWith, selectedOption, onSend, clearInputAfterSubmit, participantDetail]);
 
   const { onKeyDown, onKeyUp, onCompositionStart, onCompositionEnd } = useCtrlEnterKeyEventsHandler({
     onCtrlEnterDown,
@@ -144,8 +201,8 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
       {selectedOption &&
         <ParticipantContainer >
           <Box display='flex' alignItems='center' gap='8px'>
-            {idKey === PROMPT_ID_KEY && <CommandIcon fontSize="1rem" />}
-            {idKey === DATASOURCE_ID_KEY && <DatabaseIcon fontSize="1rem" />}
+            {chatWith === ChatTypes.prompt && <CommandIcon fontSize="1rem" />}
+            {chatWith === ChatTypes.datasource && <DatabaseIcon fontSize="1rem" />}
             <Box>{selectedOption?.name}</Box>
           </Box>
           <IconButton

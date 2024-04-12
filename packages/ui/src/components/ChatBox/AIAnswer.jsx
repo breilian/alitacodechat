@@ -50,7 +50,7 @@ const Answer = styled(Box)(({ theme }) => `
 `);
 
 const AIAnswerContainer = styled(UserMessageContainer)(({ theme }) => `
-  background: ${theme.palette.background.icon.default};
+  background: ${theme.palette.background.aiAnswerBkg};
 `);
 
 const ButtonsContainer = styled(Box)(({ theme }) => `

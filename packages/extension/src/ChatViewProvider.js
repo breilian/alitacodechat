@@ -37,8 +37,16 @@ class ChatViewProvider {
             this.getResponse(alitaService, 'getPrompts')
             break;
           }
+          case VsCodeMessageTypes.getPromptDetail: {
+            this.getResponse(alitaService, 'getPromptDetail', message.data)
+            break;
+          }
           case VsCodeMessageTypes.getDatasources: {
             this.getResponse(alitaService, 'getDatasources')
+            break;
+          }
+          case VsCodeMessageTypes.getDatasourceDetail: {
+            this.getResponse(alitaService, 'getDatasourceDetail', message.data)
             break;
           }
           case VsCodeMessageTypes.getChatResponse: {
@@ -50,6 +58,10 @@ class ChatViewProvider {
         console.error(err)
       }
     });
+
+    const alitaService = getAlitaService();
+    this.getResponse(alitaService, 'getSocketConfig');
+    this.getResponse(alitaService, 'getModelSettings');
   }
 
   addColor() {
@@ -81,7 +93,7 @@ class ChatViewProvider {
     this._view.webview.postMessage(message)
   }
 
-  getResponse (alitaService, operation, params, messageType) {
+  getResponse(alitaService, operation, params, messageType) {
     if (alitaService) {
       this.startLoading()
       alitaService[operation](params).then(data => {

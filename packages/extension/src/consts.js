@@ -19,7 +19,11 @@ const getAlitaService = () => {
 const VsCodeMessageTypes = {
   getChatResponse: 'extension.getChatResponse',
   getPrompts: 'extension.getPrompts',
-  getDatasources: 'extension.getDatasources'
+  getDatasources: 'extension.getDatasources',
+  getPromptDetail: 'extension.getPromptDetail',
+  getDatasourceDetail: 'extension.getDatasourceDetail',
+  getSocketConfig: 'extension.getSocketConfig',
+  getModelSettings: 'extension.getModelSettings'
 }
 
 const UiMessageTypes = {
@@ -27,8 +31,12 @@ const UiMessageTypes = {
   startLoading: 'ui.startLoading',
   stopLoading: 'ui.stopLoading',
   getPrompts: 'ui.getPrompts',
+  getPromptDetail: 'ui.getPromptDetail',
+  getDatasourceDetail: 'ui.getDatasourceDetail',
   getDatasources: 'ui.getDatasources',
-  getChatResponse: 'ui.getChatResponse'
+  getChatResponse: 'ui.getChatResponse',
+  getSocketConfig: 'ui.getSocketConfig',
+  getModelSettings: 'ui.getModelSettings'
 }
 
 module.exports = {

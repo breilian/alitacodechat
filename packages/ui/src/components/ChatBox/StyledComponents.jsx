@@ -21,9 +21,9 @@ export const StyledUnfoldMoreIcon = styled(UnfoldMoreIcon)(({ theme }) => ({
 
 export const ChatBoxContainer = styled(Box)(() => ({
   width: '100%',
-  // display: 'flex',
-  // flex: 1,
-  // flexDirection: 'column',
+  display: 'flex',
+  flex: 1,
+  flexDirection: 'column',
   // paddingBottom: '1rem',
 }));
 
@@ -41,12 +41,14 @@ export const StyledButton = styled(Button)(({ first, selected, theme }) => (`
 
 export const ActionContainer = styled(Box)(() => ({
   width: '100%',
-  height: '28px',
+  // height: '28px',
   display: 'flex',
   flexDirection: 'row',
-  justifyContent: 'space-between',
+  // justifyContent: 'space-between',
+  justifyContent: 'flex-end',
   alignItems: 'center',
-  marginBottom: 12,
+  // marginBottom: 12,
+  padding: '12px'
 }));
 
 export const ActionButton = styled(IconButton)(({ theme }) => (`
@@ -176,7 +178,7 @@ export const StyledCircleProgress = styled(CircularProgress)(() => `
 
 export const MessageList = styled(List)(() => `
   width: 100%;
-  height: calc(100vh - 132px);
+  height: calc(100vh - 176px);
   flex-grow: 1;
   padding-left: 0.75rem;
   padding-right: 0.75rem;
