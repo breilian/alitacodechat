@@ -51,12 +51,28 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
     setQuestion('');
     setShowExpandIcon(false);
   }, [])
+
+  const [participantDetail, setParticipantDetail] = useState(null);
+  const getParticipantDetail = useCallback((option) => {
+    if (postMessageToVsCode && option) {
+      if (chatWith) {
+        const type = chatWith === ChatTypes.prompt ?
+          VsCodeMessageTypes.getPromptDetail :
+          VsCodeMessageTypes.getDatasourceDetail
+        postMessageToVsCode({
+          type,
+          data: option.id
+        });
+      }
+    }
+  }, [chatWith, postMessageToVsCode])
   const [selectedOption, setSelectedOption] = useState(null);
   const [filteredOptions, setFilteredOptions] = useState([]);
   const handleSelectOption = useCallback((option) => () => {
     setSelectedOption(option);
+    getParticipantDetail(option);
     reset();
-  }, [reset]);
+  }, [reset, getParticipantDetail]);
 
   useImperativeHandle(ref, () => ({
     reset: () => {
@@ -69,23 +85,11 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
     }
   }));
 
-  const [participantDetail, setParticipantDetail] = useState(null);
-
   useEffect(() => {
-    if (postMessageToVsCode && selectedOption) {
-      if (chatWith) {
-        const type = chatWith === ChatTypes.prompt ?
-          VsCodeMessageTypes.getPromptDetail :
-          VsCodeMessageTypes.getDatasourceDetail
-        postMessageToVsCode({
-          type,
-          data: selectedOption.id
-        });
-      }
-    } else {
+    if (!postMessageToVsCode || !selectedOption) {
       setParticipantDetail(null);
     }
-  }, [chatWith, postMessageToVsCode, selectedOption]);
+  }, [postMessageToVsCode, selectedOption]);
 
   // Message Receiving from Extension
   useEffect(() => {
