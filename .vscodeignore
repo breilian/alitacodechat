@@ -8,3 +8,12 @@ vsc-extension-quickstart.md
 **/*.map
 **/.eslintrc.json
 **/.vscode-test.*
+
+node_modules
+use_cases
+packages
+shared
+demo
+.vscode
+*.vsix
+lerna.json

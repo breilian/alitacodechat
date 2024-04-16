@@ -12,8 +12,7 @@ import { useCtrlEnterKeyEventsHandler } from '@/components/ChatBox/hooks';
 import CommandIcon from '@/components/Icons/CommandIcon';
 import DatabaseIcon from '@/components/Icons/DatabaseIcon';
 import SendIcon from '@/components/Icons/SendIcon';
-import { Box, useTheme } from '@mui/material';
-import IconButton from '@mui/material/IconButton';
+import { Box, useTheme, Typography, IconButton } from '@mui/material';
 import { forwardRef, useCallback, useContext, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import OptionPopper from './OptionPopper';
 import CancelIcon from '../Icons/CancelIcon';
@@ -203,7 +202,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
           <Box display='flex' alignItems='center' gap='8px'>
             {chatWith === ChatTypes.prompt && <CommandIcon fontSize="1rem" />}
             {chatWith === ChatTypes.datasource && <DatabaseIcon fontSize="1rem" />}
-            <Box>{selectedOption?.name}</Box>
+            <Typography variant='labelSmall'>{selectedOption?.name}</Typography>
           </Box>
           <IconButton
             size='small'
