@@ -10,16 +10,17 @@ const RootComponent = () => {
     return createTheme(getDesignTokens('dark'));
   }, []);
 
+
   return (
     <ThemeProvider theme={getTheme()}>
-        <CssBaseline />
-        <App />
+      <CssBaseline />
+      <App />
     </ThemeProvider>
   );
 };
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-      <RootComponent />
+    <RootComponent />
   </React.StrictMode>
 );

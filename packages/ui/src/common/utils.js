@@ -38,3 +38,22 @@ export const stringToColor = (string) => {
 
   return color;
 };
+
+export const buildErrorMessage = (err) => {
+  if (err?.originalStatus === 404) {
+    return "The requested resource was not found!";
+  }
+  if (err?.data?.message) {
+    return err?.data?.message;
+  }
+  if (err?.data?.error) {
+    return err?.data?.error;
+  }
+  const location = (err?.data || [])[0]?.loc
+  const msg = (err?.data || [])[0]?.msg
+  if (location && msg) {
+    return msg + ' at ' + (location || []).join(', ');
+  } else {
+    return typeof err === 'string' ? err : err?.data;
+  }
+};

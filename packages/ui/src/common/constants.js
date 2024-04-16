@@ -606,11 +606,22 @@ export const sioEvents = {
   datasource_leave_rooms: 'datasource_leave_rooms'
 }
 
+export const ChatTypes = {
+  prompt: 'prompt',
+  datasource: 'datasource',
+  model: 'model',
+  application: 'application'
+}
 
-export const VsCodeMessageTypes= {
+
+export const VsCodeMessageTypes = {
   getChatResponse: 'extension.getChatResponse',
   getPrompts: 'extension.getPrompts',
-  getDatasources: 'extension.getDatasources'
+  getDatasources: 'extension.getDatasources',
+  getPromptDetail: 'extension.getPromptDetail',
+  getDatasourceDetail: 'extension.getDatasourceDetail',
+  getSocketConfig: 'extension.getSocketConfig',
+  getModelSettings: 'extension.getModelSettings'
 }
 
 export const UiMessageTypes = {
@@ -618,6 +629,10 @@ export const UiMessageTypes = {
   startLoading: 'ui.startLoading',
   stopLoading: 'ui.stopLoading',
   getPrompts: 'ui.getPrompts',
+  getPromptDetail: 'ui.getPromptDetail',
   getDatasources: 'ui.getDatasources',
-  getChatResponse: 'ui.getChatResponse'
+  getDatasourceDetail: 'ui.getDatasourceDetail',
+  getChatResponse: 'ui.getChatResponse',
+  getSocketConfig: 'ui.getSocketConfig',
+  getModelSettings: 'ui.getModelSettings'
 }
