@@ -1,8 +1,10 @@
 {
-  "name": "alitacodechat",
-  "displayName": "AlitaCodeChat",
+  "name": "alitacodechat",  
+  "displayName": "Alita Code Chat",
   "description": "",
-  "version": "0.0.1",
+  "publisher": "ProjectAlita",
+  "icon": "static/128x128.png",
+  "version": "0.3.1",
   "engines": {
     "vscode": "^1.87.0"
   },
@@ -12,6 +14,25 @@
   "categories": [
     "Other"
   ],
+  "keywords": [
+    "alita",
+    "codechat",
+    "openai",
+    "azure",
+    "gpt4",
+    "copilot",
+    "flutter",
+    "dart",
+    "c#",
+    "java",
+    "javascript",
+    "typescript",
+    "ai",
+    "code",
+    "llm",
+    "refactor"
+  ],
+  "repository": "https://github.com/ProjectAlita/alitacodechat.git",
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
@@ -64,5 +85,8 @@
   },
   "dependencies": {
     "html-modifier": "^1.2.0"
-  }
+  },
+  "extensionDependencies": [
+    "ProjectAlita.alitacode"
+  ]
 }
