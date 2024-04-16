@@ -13,7 +13,6 @@ Alita Code Chat depends on Alita Code for VSCode. It can be installed through vs
 - Type trigger char to add participants to chat: "/" for prompt, "#" for datasources.
 
 
-# Development
 ## Initialize
 
 `npm install`
@@ -22,6 +21,7 @@ Alita Code Chat depends on Alita Code for VSCode. It can be installed through vs
 Run following to generate the `.vsix ` package. Then you can publish it or install it manually in vs code extension by clicking the 3 dots in "Extension" and then "Install from VSIX..."
 
 `npm run vsce`
+
 ## Development
 Run following and VS Code's "Run" >> "Start Debugging" to debug extension with auto rebuild.
 
