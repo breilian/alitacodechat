@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-vars */
 import { ROLES, VsCodeMessageTypes, sioEvents, SocketMessageType, ChatTypes } from '@/common/constants';
 import { buildErrorMessage } from '@/common/utils';
-import { forwardRef, useCallback, useContext, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { forwardRef, useCallback, useContext, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import AlertDialog from '../AlertDialog';
 import Toast from '../Toast';
 import AIAnswer from './AIAnswer';
@@ -23,6 +23,7 @@ import ActionButtons from './ActionButtons';
 import { useStopStreaming } from './hooks';
 import ClearIcon from '../Icons/ClearIcon';
 import DataContext from '@/context/DataContext';
+import SocketContext from '@/context/SocketContext';
 
 const USE_STREAM = true
 const MESSAGE_REFERENCE_ROLE = 'reference'
@@ -73,7 +74,6 @@ const ChatBox = forwardRef(({
   const listRefs = useRef([]);
   const messagesEndRef = useRef();
   const name = 'User';
-  const projectId = 8;
 
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [answerIdToRegenerate, setAnswerIdToRegenerate] = useState('');
@@ -244,7 +244,14 @@ const ChatBox = forwardRef(({
       }]
     })
 
-    const { modelSettings } = dataContext
+    const { modelSettings, socketConfig } = dataContext
+    const projectId = socketConfig?.projectId
+    if (!projectId) {
+      setToastMessage('AlitaCode extension Project ID settingis missing. Please set it to continue chat.');
+      setToastSeverity('error');
+      setShowToast(true);
+      return
+    }
     if (data.datasource_id) {
       if (!data.chat_settings_ai || !data.chat_settings_embedding) {
         setToastMessage('Datasource model or embedding setting is missing. Please select another one for chat.');
@@ -277,16 +284,16 @@ const ChatBox = forwardRef(({
       if (modelSettings) {
         payloadData.model_settings = modelSettings
       } else {
-        // eslint-disable-next-line no-console
-        console.error('AlitaCode extension model settings are missing.');
-        onClickSend(data)
+        setToastMessage('AlitaCode extension model settings are missing.');
+        setToastSeverity('error');
+        setShowToast(true);
         return
       }
     }
     const payload = generateChatPayload(payloadData)
     emit(payload)
   },
-    [scrollToMessageListEnd, setChatHistory, dataContext, chatHistory, emit, onClickSend])
+    [scrollToMessageListEnd, setChatHistory, dataContext, chatHistory, emit])
 
   const onSend = useCallback(
     (data) => {

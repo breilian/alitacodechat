@@ -8,9 +8,9 @@ export function SocketProvider({ children }) {
   const { socketConfig } = useContext(DataContext);
   const [socket, setSocket] = useState(null);
 
-  const connectSocket = useCallback((config) => {
-    if (!config || !config.host) return;
-    const { host, path } = config
+  const connectSocket = useCallback(() => {
+    if (!socketConfig || !socketConfig.host) return;
+    const { host, path } = socketConfig
 
     const socketIo = io(host, {
       path,
@@ -28,9 +28,10 @@ export function SocketProvider({ children }) {
     })
 
     return socketIo
-  }, []);
+  }, [socketConfig]);
 
   useEffect(() => {
+    console.log('socketConfig', socketConfig)
     if (!socketConfig) return;
     const socketIo = connectSocket(socketConfig)
     setSocket(socketIo)
@@ -42,7 +43,13 @@ export function SocketProvider({ children }) {
 
   return (
     <SocketContext.Provider
-      value={socket}
+      value={{
+        socket,
+        connectSocket,
+        disconnectSocket: () => {
+          socket && socket.disconnect();
+        }
+      }}
     >
       {children}
     </SocketContext.Provider>
