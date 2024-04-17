@@ -200,7 +200,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
   }, [showExpandIcon]);
 
   return (
-    <>
+    <Box flex='0 0 auto'>
       {selectedOption &&
         <ParticipantContainer >
           <Box display='flex' alignItems='center' gap='8px'>
@@ -268,7 +268,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
           {isLoading && <StyledCircleProgress />}
         </SendButtonContainer>
       </ChatInputContainer>
-    </>
+    </Box>
   )
 });
 

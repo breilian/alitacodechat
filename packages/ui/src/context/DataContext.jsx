@@ -7,7 +7,6 @@ const DataContext = createContext(undefined);
 export default DataContext;
 
 export const DataProvider = ({ children}) => {
-
   const [socketConfig, setSocketConfig] = useState(null);
   const [chatHistory, setChatHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -63,7 +62,6 @@ export const DataProvider = ({ children}) => {
           }]);
           break;
         case UiMessageTypes.getSocketConfig:
-          console.log('getSocketConfig', message.data);
           setSocketConfig(message.data);
           break;
         case UiMessageTypes.getModelSettings:

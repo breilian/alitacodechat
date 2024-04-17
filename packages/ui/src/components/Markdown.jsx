@@ -1,8 +1,10 @@
 import { MuiMarkdown, getOverrides } from 'mui-markdown';
 import styled from '@emotion/styled';
 import Link from '@mui/material/Link';
+import { marked } from 'marked'
+import { Highlight, themes } from 'prism-react-renderer';
 
- const MarkdownMapping = {
+const MarkdownMapping = {
   h1: {
     component: 'h1',
     props: {
@@ -62,17 +64,40 @@ const StyledDiv = styled('div')(() => `
 `);
 
 const Markdown = ({ children }) => {
-  return (
-    <MuiMarkdown overrides={{
-      ...getOverrides(),
-      ...MarkdownMapping,
-      div: {
-        component: StyledDiv,
-        props: {},
-      },
-    }}>
-      {children}
-    </MuiMarkdown>
+  const markedTokens = marked.lexer(children || '')
+  return markedTokens.map(
+    (markedToken, index) => markedToken.type === 'code' ? <Highlight
+      key={index}
+      theme={themes.vsDark}
+      code={markedToken.text}
+      language={markedToken.lang}
+    >
+      {({ className, style, tokens, getLineProps, getTokenProps }) => (
+        <pre className={className} style={style}>
+          {tokens.map((line, i) => (
+            <div key={i} {...getLineProps({ line })}>
+              <span>{' '}</span>
+              {line.map((token, key) => (
+                <span key={key} {...getTokenProps({ token })} />
+              ))}
+            </div>
+          ))}
+        </pre>
+      )}
+    </Highlight>
+      :
+      <MuiMarkdown
+        key={index}
+        overrides={{
+          ...getOverrides(),
+          ...MarkdownMapping,
+          div: {
+            component: StyledDiv,
+            props: {},
+          },
+        }}>
+        {markedToken.raw}
+      </MuiMarkdown>
   )
 };
 
