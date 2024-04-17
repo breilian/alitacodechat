@@ -25,6 +25,12 @@ export const DataProvider = ({ children}) => {
       const vscode = window.acquireVsCodeApi();
       vscodeRef.current = vscode;
       vscode.postMessage({
+        type: VsCodeMessageTypes.getSocketConfig,
+      });
+      vscode.postMessage({
+        type: VsCodeMessageTypes.getModelSettings,
+      });
+      vscode.postMessage({
         type: VsCodeMessageTypes.getPrompts,
       });
       vscode.postMessage({

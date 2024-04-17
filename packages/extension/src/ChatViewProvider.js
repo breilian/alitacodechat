@@ -53,15 +53,19 @@ class ChatViewProvider {
             this.getResponse(alitaService, 'chat', message.data, 'getChatResponse')
             break;
           }
+          case VsCodeMessageTypes.getModelSettings: {
+            this.getResponse(alitaService, 'getModelSettings')
+            break;
+          }
+          case VsCodeMessageTypes.getSocketConfig: {
+            this.getResponse(alitaService, 'getSocketConfig')
+            break;
+          }
         }
       } catch (err) {
         console.error(err)
       }
     });
-
-    const alitaService = getAlitaService();
-    this.getResponse(alitaService, 'getSocketConfig');
-    this.getResponse(alitaService, 'getModelSettings');
   }
 
   addColor() {
