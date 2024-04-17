@@ -138,13 +138,26 @@ const ChatBox = forwardRef(({
     [isRegenerating],
   )
 
+  const scrollToMessageListEnd = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ block: "end" });
+  }, [])
+
   const handleSocketEvent = useCallback(async message => {
     const { stream_id, type: socketMessageType, message_type, response_metadata } = message
     const [msgIndex, msg] = getMessage(stream_id, message_type)
 
     const scrollToMessageBottom = () => {
       if (sessionStorage.getItem(AUTO_SCROLL_KEY) === 'true') {
-        (listRefs.current[msgIndex] || messagesEndRef?.current)?.scrollIntoView({ block: "end" });
+        const messageElement = listRefs.current[msgIndex]
+        if (messageElement) {
+          const parentElement = messageElement.parentElement;
+          messageElement.scrollIntoView({ block: "end" });
+          if (parentElement) {
+            parentElement.scrollTop += 12;
+          }
+        } else {
+          scrollToMessageListEnd();
+        }
       }
     };
 
@@ -172,6 +185,7 @@ const ChatBox = forwardRef(({
         break
       case SocketMessageType.References:
         msg.references = message.references
+        setTimeout(scrollToMessageBottom, 0);
         break
       case SocketMessageType.Error:
         msg.isStreaming = false
@@ -188,17 +202,37 @@ const ChatBox = forwardRef(({
       prevState[msgIndex] = msg
       return [...prevState]
     })
-  }, [getMessage, handleError, setChatHistory])
+  }, [getMessage, handleError, scrollToMessageListEnd, setChatHistory])
 
   const dataContext = useContext(DataContext);
   const { emit } = useSocket(
     chatWith === ChatTypes.datasource ? sioEvents.datasource_predict : sioEvents.promptlib_predict,
     handleSocketEvent
   )
+
+  // Message Sending to Extension
+  const onClickSend = useCallback((data) => {
+    postMessageToVsCode && postMessageToVsCode({
+      type: VsCodeMessageTypes.getChatResponse,
+      data: {
+        ...data,
+        chat_history: chatHistory,
+      }
+    });
+    setChatHistory((prevMessages) => {
+      return [...prevMessages, {
+        ...data,
+        id: new Date().getTime(),
+        role: ROLES.User,
+        name: 'User',
+        content: data.user_input,
+      }]
+    })
+    setTimeout(scrollToMessageListEnd, 0);
+  }, [chatHistory, postMessageToVsCode, scrollToMessageListEnd, setChatHistory]);
+
   const onPredictStream = useCallback(data => {
-    setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ block: "end" });
-    }, 0);
+    setTimeout(scrollToMessageListEnd, 0);
     const question = data.user_input;
     setChatHistory((prevMessages) => {
       return [...prevMessages, {
@@ -243,39 +277,16 @@ const ChatBox = forwardRef(({
       if (modelSettings) {
         payloadData.model_settings = modelSettings
       } else {
-        setShowToast(true);
-        setToastMessage('AlitaCode extension model settings are missing.');
-        setToastSeverity('error');
+        // eslint-disable-next-line no-console
+        console.error('AlitaCode extension model settings are missing.');
+        onClickSend(data)
         return
       }
     }
     const payload = generateChatPayload(payloadData)
     emit(payload)
   },
-    [setChatHistory, chatHistory, emit, dataContext])
-
-  // Message Sending to Extension
-  const onClickSend = useCallback((data) => {
-    postMessageToVsCode && postMessageToVsCode({
-      type: VsCodeMessageTypes.getChatResponse,
-      data: {
-        ...data,
-        chat_history: chatHistory,
-      }
-    });
-    setChatHistory((prevMessages) => {
-      return [...prevMessages, {
-        ...data,
-        id: new Date().getTime(),
-        role: ROLES.User,
-        name: 'User',
-        content: data.user_input,
-      }]
-    })
-    setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ block: "end" });
-    }, 0);
-  }, [chatHistory, postMessageToVsCode, setChatHistory]);
+    [scrollToMessageListEnd, setChatHistory, dataContext, chatHistory, emit, onClickSend])
 
   const onSend = useCallback(
     (data) => {
@@ -346,46 +357,42 @@ const ChatBox = forwardRef(({
             </ActionButton>
           </Box>
         </ActionContainer>
-        <ChatBodyContainer>
-          <MessageList sx={messageListSX}>
-            {
-              chatHistory.map((message, index) => {
-                return message.role === 'user' ?
-                  <UserMessage
-                    key={message.id}
-                    ref={(ref) => (listRefs.current[index] = ref)}
-                    content={message.content}
-                    onCopy={onCopyToClipboard(message.id)}
-                    onDelete={onDeleteAnswer(message.id)}
-                  />
-                  :
-                  <AIAnswer
-                    key={message.id}
-                    ref={(ref) => (listRefs.current[index] = ref)}
-                    answer={message.content}
-                    onStop={onStopStreaming(message.id)}
-                    onCopy={onCopyToClipboard(message.id)}
-                    onDelete={onDeleteAnswer(message.id)}
-                    shouldDisableRegenerate={isLoading}
-                    references={message.references}
-                    isLoading={Boolean(message.isLoading)}
-                    isStreaming={message.isStreaming}
-                  />
-              })
-            }
-            <div ref={messagesEndRef} />
-          </MessageList>
+        <MessageList sx={messageListSX}>
           {
-            <ChatInput
-              onSend={onSend}
-              ref={chatInput}
-              isLoading={isLoading}
-              disabledSend={isLoading}
-              chatWith={chatWith}
-              setChatWith={setChatWith}
-              shouldHandleEnter />
+            chatHistory.map((message, index) => {
+              return message.role === 'user' ?
+                <UserMessage
+                  key={message.id}
+                  ref={(ref) => (listRefs.current[index] = ref)}
+                  content={message.content}
+                  onCopy={onCopyToClipboard(message.id)}
+                  onDelete={onDeleteAnswer(message.id)}
+                />
+                :
+                <AIAnswer
+                  key={message.id}
+                  ref={(ref) => (listRefs.current[index] = ref)}
+                  answer={message.content}
+                  onStop={onStopStreaming(message.id)}
+                  onCopy={onCopyToClipboard(message.id)}
+                  onDelete={onDeleteAnswer(message.id)}
+                  shouldDisableRegenerate={isLoading}
+                  references={message.references}
+                  isLoading={Boolean(message.isLoading)}
+                  isStreaming={message.isStreaming}
+                />
+            })
           }
-        </ChatBodyContainer>
+          <div ref={messagesEndRef} />
+        </MessageList>
+        <ChatInput
+          onSend={onSend}
+          ref={chatInput}
+          isLoading={isLoading}
+          disabledSend={isLoading}
+          chatWith={chatWith}
+          setChatWith={setChatWith}
+          shouldHandleEnter />
         <Toast
           open={showToast}
           severity={toastSeverity}
