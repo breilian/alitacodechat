@@ -63,6 +63,7 @@
   },
   "scripts": {
     "vsce": "npx vsce package",
+    "publish": "npx vsce publish",
     "vscode:prepublish": "npm run package",
     "package": "npm run build",
     "build": "npx lerna run build",

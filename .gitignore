@@ -3,4 +3,5 @@ dist/
 *.vsix
 .idea
 .DS_Store
+.promptLib
 **/node_modules/
