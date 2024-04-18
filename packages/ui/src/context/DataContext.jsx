@@ -1,12 +1,12 @@
 /* eslint-disable no-console */
-import { createContext, useEffect, useRef, useState } from 'react';
+import { createContext, useCallback, useEffect, useRef, useState } from 'react';
 import { ROLES, UiMessageTypes, VsCodeMessageTypes } from '@/common/constants.js';
 
 const DataContext = createContext(undefined);
 
 export default DataContext;
 
-export const DataProvider = ({ children}) => {
+export const DataProvider = ({ children }) => {
   const [socketConfig, setSocketConfig] = useState(null);
   const [chatHistory, setChatHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -14,6 +14,22 @@ export const DataProvider = ({ children}) => {
   const [datasources, setDatasources] = useState([]);
   const vscodeRef = useRef(null);
   const [modelSettings, setModelSettings] = useState(null);
+
+  const [messageId, setMessageId] = useState(0);
+  const [messagePromises, setMessagePromises] = useState({});
+
+  const sendMessage = useCallback(({type, data}) => {
+    const id = messageId + 1;
+    setMessageId(id);
+    return new Promise((resolve, reject) => {
+      setMessagePromises(prev => ({ ...prev, [id]: { resolve, reject } }));
+      vscodeRef.current?.postMessage({
+        id,
+        type,
+        data
+      });
+    });
+  }, [messageId]);
 
   useEffect(() => {
     if (!vscodeRef.current) {
@@ -45,6 +61,12 @@ export const DataProvider = ({ children}) => {
       const message = event.data;
       console.log("message from vs code: ", message);
       switch (message.type) {
+        case UiMessageTypes.getSelectedText:
+          if (messagePromises[message.id]) {
+            messagePromises[message.id].resolve(message.data);
+            setMessagePromises(prev => ({ ...prev, [message.id]: null }));
+          }
+          break;
         case UiMessageTypes.error:
           console.error(message.message);
           break;
@@ -81,7 +103,7 @@ export const DataProvider = ({ children}) => {
     return () => {
       window.removeEventListener('message', messageHandler);
     };
-  }, []);
+  }, [messagePromises]);
 
   return (
     <DataContext.Provider
@@ -95,6 +117,7 @@ export const DataProvider = ({ children}) => {
         isLoading,
         prompts,
         datasources,
+        sendMessage,
       }}
     >
       {children}

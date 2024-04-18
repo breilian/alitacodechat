@@ -33,6 +33,15 @@ class ChatViewProvider {
       try {
         const alitaService = getAlitaService()
         switch (message.type) {
+          case VsCodeMessageTypes.getSelectedText: {
+            const data = this.getSelectedText();
+            this.sendMessageToWebView({
+              id: message.id,
+              type: UiMessageTypes.getSelectedText,
+              data,
+            })
+            break;
+          }
           case VsCodeMessageTypes.getPrompts: {
             this.getResponse(alitaService, 'getPrompts')
             break;
@@ -68,17 +77,17 @@ class ChatViewProvider {
     });
   }
 
-  addColor() {
-    if (this._view) {
-      this._view.webview.postMessage({ type: 'addColor' });
+  getSelectedText() {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+        return; // No open text editor
     }
-  }
 
-  clearColors() {
-    if (this._view) {
-      this._view.webview.postMessage({ type: 'clearColors' });
-    }
-  }
+    const selection = editor.selection;
+    const text =  editor.document.getText(selection);
+
+    return text && text.trim();
+}
 
 
   startLoading() {
