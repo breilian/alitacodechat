@@ -1,6 +1,16 @@
 import { Menu, MenuItem } from '@mui/material';
 import { useCallback } from 'react';
 
+const StyledMenu = styled(Menu)({
+  '& .MuiMenu-paper': {
+    "&::-webkit-scrollbar": {
+      width: '0 !important',
+      height: '0',
+    },
+    scrollbarWidth: "none", // For Firefox
+    msOverflowStyle: "none", // For Internet Explorer and Edge
+  }
+});
 
 export default function OptionPopper({
   anchorEl,
@@ -20,7 +30,7 @@ export default function OptionPopper({
   const open = Boolean(anchorEl);
 
   return (
-    <Menu
+    <StyledMenu
       id="basic-menu"
       anchorEl={anchorEl}
       open={open}
@@ -36,6 +46,6 @@ export default function OptionPopper({
           )
         })
       }
-    </Menu>
+    </StyledMenu>
   );
 }

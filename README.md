@@ -27,3 +27,5 @@ Run following and VS Code's "Run" >> "Start Debugging" to debug extension with a
 
 `npm run build-watch`
 
+Type `Command + P` in VS code and then `>Developer: Open Webview Developer Tools` to open the ui debug tool just like the Chrome browser debug tool.
+

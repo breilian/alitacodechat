@@ -127,8 +127,7 @@ class ChatViewProvider {
 
 
     // Do the same for the stylesheet.
-    const styleResetUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, chatViewBuildPath, 'assets', 'index.css'));
-    const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, chatViewBuildPath, 'assets', 'react.svg'));
+    const styleIndexUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, chatViewBuildPath, 'assets', 'index.css'));
     const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'static', 'main.css'));
 
     return `<!DOCTYPE html>
@@ -141,8 +140,7 @@ class ChatViewProvider {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Alita Code Chat</title>
         <script> window.__webview_public_path__ = "${publicPath}"</script>
-        <link rel="stylesheet" href="${styleResetUri}">
-        <link rel="stylesheet" href="${styleVSCodeUri}">
+        <link rel="stylesheet" href="${styleIndexUri}">
         <link rel="stylesheet" href="${styleMainUri}">
         <script type="module" crossorigin src="${mainPanelJsUri}"></script>
 			</head>
