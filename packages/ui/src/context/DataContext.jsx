@@ -77,10 +77,10 @@ export const DataProvider = ({ children }) => {
           setIsLoading(false);
           break;
         case UiMessageTypes.getPrompts:
-          setPrompts(message.data.rows);
+          setPrompts(message.data);
           break;
         case UiMessageTypes.getDatasources:
-          setDatasources(message.data.rows);
+          setDatasources(message.data);
           break;
         case UiMessageTypes.getChatResponse:
           setChatHistory(prev => [...prev, {
