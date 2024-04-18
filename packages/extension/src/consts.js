@@ -17,6 +17,7 @@ const getAlitaService = () => {
 }
 
 const VsCodeMessageTypes = {
+  getSelectedText: 'extension.getSelectedText',
   getChatResponse: 'extension.getChatResponse',
   getPrompts: 'extension.getPrompts',
   getDatasources: 'extension.getDatasources',
@@ -27,6 +28,7 @@ const VsCodeMessageTypes = {
 }
 
 const UiMessageTypes = {
+  getSelectedText: 'ui.getSelectedText',
   error: 'ui.error',
   startLoading: 'ui.startLoading',
   stopLoading: 'ui.stopLoading',

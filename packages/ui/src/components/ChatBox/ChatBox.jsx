@@ -44,7 +44,7 @@ const generatePayload = ({
 })
 
 const generateChatPayload = ({
-  projectId, prompt_id, question, chatHistory, name, currentVersionId, model_settings
+  projectId, prompt_id, question, messages, chatHistory, name, currentVersionId, model_settings
 }) => {
   const payload = generatePayload({
     projectId, prompt_id, type: 'chat', name, currentVersionId, model_settings
@@ -58,6 +58,9 @@ const generateChatPayload = ({
     }
   }) : []
   payload.user_input = question
+  if (messages) {
+    payload.messages = messages
+  }
   return payload
 }
 
@@ -231,8 +234,21 @@ const ChatBox = forwardRef(({
     setTimeout(scrollToMessageListEnd, 0);
   }, [chatHistory, postMessageToVsCode, scrollToMessageListEnd, setChatHistory]);
 
-  const onPredictStream = useCallback(data => {
+  const onPredictStream = useCallback(async data => {
     setTimeout(scrollToMessageListEnd, 0);
+    
+    const { modelSettings, socketConfig, sendMessage } = dataContext
+    
+    const selectedText = await sendMessage({
+      type: VsCodeMessageTypes.getSelectedText
+    });
+    const messages = []
+    if (selectedText) {
+      messages.push({
+        role: ROLES.User,
+        content: selectedText
+      })
+    }
     const question = data.user_input;
     setChatHistory((prevMessages) => {
       return [...prevMessages, {
@@ -244,7 +260,6 @@ const ChatBox = forwardRef(({
       }]
     })
 
-    const { modelSettings, socketConfig } = dataContext
     const projectId = socketConfig?.projectId
     if (!projectId) {
       setToastMessage('AlitaCode extension Project ID settingis missing. Please set it to continue chat.');
@@ -276,6 +291,7 @@ const ChatBox = forwardRef(({
       question,
       chatHistory,
       name,
+      messages
     }
     if (data.prompt_id && data.currentVersionId) {
       payloadData.prompt_id = data.prompt_id
