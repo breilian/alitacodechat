@@ -33,7 +33,7 @@ export function SocketProvider({ children }) {
   useEffect(() => {
     console.log('socketConfig', socketConfig)
     if (!socketConfig) return;
-    const socketIo = connectSocket(socketConfig)
+    const socketIo = connectSocket()
     setSocket(socketIo)
 
     return () => {

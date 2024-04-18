@@ -3,31 +3,23 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AUTO_SCROLL_KEY } from './AutoScrollToggle';
 
 export const useCtrlEnterKeyEventsHandler = ({ onShiftEnterPressed, onCtrlEnterDown, onEnterDown }) => {
-  const keysPressed = useMemo(() => ({}), [])
   const [isInComposition, setIsInComposition] = useState(false)
   const onKeyDown = useCallback(
     (event) => {
-      if (isInComposition) {
+      if (isInComposition || event.key !== 'Enter') {
         return
       }
-      keysPressed[event.key] = true
-      if (keysPressed['Control'] && event.key === 'Enter' && onCtrlEnterDown) {
-        onCtrlEnterDown()
-      } else if (keysPressed['Shift'] && event.key === 'Enter' && onShiftEnterPressed) {
-        onShiftEnterPressed()
-      } else if (!keysPressed['Control'] && !keysPressed['Shift'] && event.key === 'Enter' && onEnterDown) {
-        onEnterDown(event)
+
+      if (event.ctrlKey) {
+        onCtrlEnterDown && onCtrlEnterDown()
+      } else if (event.shiftKey) {
+        onShiftEnterPressed && onShiftEnterPressed()
+      } else {
+        onEnterDown && onEnterDown(event)
       }
     },
-    [isInComposition, keysPressed, onCtrlEnterDown, onEnterDown, onShiftEnterPressed],
+    [isInComposition, onCtrlEnterDown, onEnterDown, onShiftEnterPressed],
   );
-
-  const onKeyUp = useCallback(
-    (event) => {
-      delete keysPressed[event.key]
-    },
-    [keysPressed],
-  )
 
   const onCompositionStart = useCallback(() => {
     setIsInComposition(true)
@@ -36,7 +28,7 @@ export const useCtrlEnterKeyEventsHandler = ({ onShiftEnterPressed, onCtrlEnterD
     setIsInComposition(false)
   }, [])
 
-  return { onKeyDown, onKeyUp, onCompositionStart, onCompositionEnd }
+  return { onKeyDown, onCompositionStart, onCompositionEnd }
 }
 
 export const useStopStreaming = ({

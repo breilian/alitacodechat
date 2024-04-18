@@ -74,6 +74,12 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
     reset();
   }, [reset, getParticipantDetail]);
 
+  useEffect(() => {
+    if (!isLoading) {
+      chatInputRef.current?.focus();
+    }
+  }, [isLoading]);
+
   useImperativeHandle(ref, () => ({
     reset: () => {
       setInputContent('');
@@ -188,7 +194,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
     }
   }, [question, disabledSend, chatWith, selectedOption, onSend, clearInputAfterSubmit, participantDetail]);
 
-  const { onKeyDown, onKeyUp, onCompositionStart, onCompositionEnd } = useCtrlEnterKeyEventsHandler({
+  const { onKeyDown, onCompositionStart, onCompositionEnd } = useCtrlEnterKeyEventsHandler({
     onCtrlEnterDown,
     onEnterDown,
   });
@@ -223,9 +229,10 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
         handleSelect={handleSelectOption}
       />
 
-      <ChatInputContainer sx={sx} ref={chatInputRef}>
+      <ChatInputContainer sx={sx} >
         <Box sx={{ flex: 1, marginRight: 1 }}>
           <StyledTextField
+            inputRef={chatInputRef}
             value={inputContent}
             fullWidth
             id="standard-multiline-static"
@@ -235,7 +242,6 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
             variant="standard"
             onChange={onInputQuestion}
             onKeyDown={onKeyDown}
-            onKeyUp={onKeyUp}
             onCompositionStart={onCompositionStart}
             onCompositionEnd={onCompositionEnd}
             disabled={isLoading}
