@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
+import { ROLES } from '@/common/constants.js';
 import { createContext, useCallback, useEffect, useRef, useState } from 'react';
-import { ROLES, UiMessageTypes, VsCodeMessageTypes } from '@/common/constants.js';
+import { UiMessageTypes, VsCodeMessageTypes } from 'shared';
 
 const DataContext = createContext(undefined);
 
@@ -9,9 +10,9 @@ export default DataContext;
 const filterByCodeTag = (list) => {
   if (!Array.isArray(list)) return []
 
-  return (list || []).filter(p => 
+  return (list || []).filter(p =>
     p.tags && p.tags.some(t => t.name.toLowerCase() === 'code'
-  ));
+    ));
 }
 
 export const DataProvider = ({ children }) => {
@@ -26,7 +27,7 @@ export const DataProvider = ({ children }) => {
   const [messageId, setMessageId] = useState(0);
   const [messagePromises, setMessagePromises] = useState({});
 
-  const sendMessage = useCallback(({type, data}) => {
+  const sendMessage = useCallback(({ type, data }) => {
     const id = messageId + 1;
     setMessageId(id);
     return new Promise((resolve, reject) => {
@@ -41,6 +42,7 @@ export const DataProvider = ({ children }) => {
 
   const loadCoreData = useCallback(() => {
     if (!vscodeRef.current) return
+    console.log('loadCoreData', VsCodeMessageTypes);
 
     vscodeRef.current?.postMessage({
       type: VsCodeMessageTypes.getSocketConfig,
@@ -90,7 +92,7 @@ export const DataProvider = ({ children }) => {
         case UiMessageTypes.stopLoading:
           setIsLoading(false);
           break;
-        case UiMessageTypes.getPrompts: 
+        case UiMessageTypes.getPrompts:
           setPrompts(filterByCodeTag(message.data));
           break;
         case UiMessageTypes.getDatasources:
