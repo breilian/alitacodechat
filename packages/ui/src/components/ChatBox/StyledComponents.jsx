@@ -49,8 +49,8 @@ export const ActionContainer = styled(Box)(() => ({
 }));
 
 export const ActionButton = styled(IconButton)(({ theme }) => (`
-  width: 2rem;
-  height: 2rem;
+  height: 28px; 
+  width: 28px;
   display: flex;
   padding: 0.375rem;
   align-items: center;

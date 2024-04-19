@@ -4,19 +4,23 @@ import AutoScrollToggle from './AutoScrollToggle';
 import {
   ActionButton
 } from './StyledComponents';
+import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
 
 export default function ActionButtons({
   isStreaming,
   onStopAll,
+  onRefresh,
 }) {
   return (
     <>
+      <StyledTooltip title={'Reload Alita Code settings, prompt and datasource options'} placement="top">
+        <ActionButton onClick={onRefresh}>
+          <RefreshOutlinedIcon sx={{ fontSize: '1.13rem' }} color="icon" />
+        </ActionButton>
+      </StyledTooltip>
       {isStreaming &&
         <StyledTooltip title={'Stop generating'} placement="top">
-          <ActionButton
-            sx={{ height: '28px', width: '28px' }}
-            onClick={onStopAll}
-          >
+          <ActionButton onClick={onStopAll}>
             <StopCircleOutlinedIcon sx={{ fontSize: '1.13rem' }} color="icon" />
           </ActionButton>
         </StyledTooltip>}

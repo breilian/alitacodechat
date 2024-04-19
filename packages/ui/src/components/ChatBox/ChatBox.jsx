@@ -72,6 +72,7 @@ const ChatBox = forwardRef(({
     postMessageToVsCode,
     chatHistory = [],
     setChatHistory = () => { },
+    loadCoreData,
   } = useContext(DataContext);
   const chatInput = useRef(null);
   const listRefs = useRef([]);
@@ -369,12 +370,12 @@ const ChatBox = forwardRef(({
             <ActionButtons
               isStreaming={isStreaming}
               onStopAll={onStopAll}
+              onRefresh={loadCoreData}
             />
             <ActionButton
               aria-label="clear the chat"
               disabled={isLoading || isStreaming || !chatHistory.length}
               onClick={onClickClearChat}
-              sx={{ height: '28px', width: '28px' }}
             >
               <ClearIcon sx={{ fontSize: 16 }} />
             </ActionButton>
