@@ -13,17 +13,17 @@ export default function ActionButtons({
 }) {
   return (
     <>
-      <StyledTooltip title={'Reload Alita Code settings, prompt and datasource options'} placement="top">
-        <ActionButton onClick={onRefresh}>
-          <RefreshOutlinedIcon sx={{ fontSize: '1.13rem' }} color="icon" />
-        </ActionButton>
-      </StyledTooltip>
       {isStreaming &&
         <StyledTooltip title={'Stop generating'} placement="top">
           <ActionButton onClick={onStopAll}>
             <StopCircleOutlinedIcon sx={{ fontSize: '1.13rem' }} color="icon" />
           </ActionButton>
         </StyledTooltip>}
+      <StyledTooltip title={'Reload Alita Code settings, prompt and datasource options'} placement="top">
+        <ActionButton onClick={onRefresh}>
+          <RefreshOutlinedIcon sx={{ fontSize: '1.13rem' }} color="icon" />
+        </ActionButton>
+      </StyledTooltip>
       <AutoScrollToggle />
     </>
   )

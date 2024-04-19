@@ -7,8 +7,9 @@ import DataContext from "./DataContext";
 export function SocketProvider({ children }) {
   const { socketConfig } = useContext(DataContext);
   const [socket, setSocket] = useState(null);
+  const [connected, setConnected] = useState(false);
 
-  const connectSocket = useCallback(() => {
+  const createSocket = useCallback(() => {
     if (!socketConfig || !socketConfig.host) return;
     const { host, path } = socketConfig
 
@@ -19,12 +20,15 @@ export function SocketProvider({ children }) {
 
     socketIo.on('connect', () => {
       console.log('sio connected', socketIo)
+      setConnected(socketIo.connected)
     })
     socketIo?.on("connect_error", (err) => {
       console.log(`Connection error due to ${err}`);
+      setConnected(socketIo.connected)
     });
     socketIo?.on('disconnect', () => {
       console.log('needs reconnecting', socketIo)
+      setConnected(socketIo.connected)
     })
 
     return socketIo
@@ -32,23 +36,21 @@ export function SocketProvider({ children }) {
 
   useEffect(() => {
     console.log('socketConfig', socketConfig)
-    if (!socketConfig) return;
-    const socketIo = connectSocket()
+    if (!socketConfig || socket) return;
+    const socketIo = createSocket()
     setSocket(socketIo)
 
     return () => {
       socketIo && socketIo.disconnect();
     };
-  }, [connectSocket, socketConfig]);
+  }, [createSocket, socket, socketConfig]);
 
   return (
     <SocketContext.Provider
       value={{
         socket,
-        connectSocket,
-        disconnectSocket: () => {
-          socket && socket.disconnect();
-        }
+        createSocket,
+        connected,
       }}
     >
       {children}

@@ -2,7 +2,7 @@ import { createContext } from 'react';
 
 const SocketContext = createContext({
   socket: null,
-  connectSocket: () => {
+  createSocket: () => {
   },
   disconnectSocket: () => {
   }
