@@ -1,6 +1,7 @@
 /* eslint-disable react/jsx-no-bind */
 /* eslint-disable no-unused-vars */
-import { ROLES, VsCodeMessageTypes, sioEvents, SocketMessageType, ChatTypes } from '@/common/constants';
+import { ROLES, sioEvents, SocketMessageType, ChatTypes } from '@/common/constants';
+import { VsCodeMessageTypes } from 'shared';
 import { buildErrorMessage } from '@/common/utils';
 import { forwardRef, useCallback, useContext, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import AlertDialog from '../AlertDialog';

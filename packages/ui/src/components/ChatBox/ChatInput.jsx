@@ -1,3 +1,4 @@
+import { ChatTypes } from '@/common/constants';
 import {
   ChatInputContainer,
   ParticipantContainer,
@@ -12,12 +13,12 @@ import { useCtrlEnterKeyEventsHandler } from '@/components/ChatBox/hooks';
 import CommandIcon from '@/components/Icons/CommandIcon';
 import DatabaseIcon from '@/components/Icons/DatabaseIcon';
 import SendIcon from '@/components/Icons/SendIcon';
-import { Box, useTheme, Typography, IconButton } from '@mui/material';
-import { forwardRef, useCallback, useContext, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import OptionPopper from './OptionPopper';
-import CancelIcon from '../Icons/CancelIcon';
-import { ChatTypes, UiMessageTypes, VsCodeMessageTypes } from '@/common/constants';
 import DataContext from '@/context/DataContext';
+import { Box, IconButton, Typography, useTheme } from '@mui/material';
+import { forwardRef, useCallback, useContext, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { UiMessageTypes, VsCodeMessageTypes } from 'shared';
+import CancelIcon from '../Icons/CancelIcon';
+import OptionPopper from './OptionPopper';
 
 
 const MAX_ROWS = 15;

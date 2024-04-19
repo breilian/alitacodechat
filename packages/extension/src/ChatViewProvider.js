@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 const vscode = require('vscode');
-const { getAlitaService, VsCodeMessageTypes, UiMessageTypes } = require('./consts');
+const { getAlitaService } = require('./consts');
+const { VsCodeMessageTypes, UiMessageTypes } = require('shared');
 
 const chatViewBuildPath = 'dist';
 class ChatViewProvider {
