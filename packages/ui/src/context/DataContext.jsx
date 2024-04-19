@@ -6,6 +6,14 @@ const DataContext = createContext(undefined);
 
 export default DataContext;
 
+const filterByCodeTag = (list) => {
+  if (!Array.isArray(list)) return []
+
+  return (list || []).filter(p => 
+    p.tags && p.tags.some(t => t.name.toLowerCase() === 'code'
+  ));
+}
+
 export const DataProvider = ({ children }) => {
   const [socketConfig, setSocketConfig] = useState(null);
   const [chatHistory, setChatHistory] = useState([]);
@@ -31,6 +39,23 @@ export const DataProvider = ({ children }) => {
     });
   }, [messageId]);
 
+  const loadCoreData = useCallback(() => {
+    if (!vscodeRef.current) return
+
+    vscodeRef.current?.postMessage({
+      type: VsCodeMessageTypes.getSocketConfig,
+    });
+    vscodeRef.current?.postMessage({
+      type: VsCodeMessageTypes.getModelSettings,
+    });
+    vscodeRef.current?.postMessage({
+      type: VsCodeMessageTypes.getPrompts,
+    });
+    vscodeRef.current?.postMessage({
+      type: VsCodeMessageTypes.getDatasources,
+    });
+  }, []);
+
   useEffect(() => {
     if (!vscodeRef.current) {
       console.log('acquireVsCodeApi', vscodeRef.current)
@@ -40,20 +65,9 @@ export const DataProvider = ({ children }) => {
       }
       const vscode = window.acquireVsCodeApi();
       vscodeRef.current = vscode;
-      vscode.postMessage({
-        type: VsCodeMessageTypes.getSocketConfig,
-      });
-      vscode.postMessage({
-        type: VsCodeMessageTypes.getModelSettings,
-      });
-      vscode.postMessage({
-        type: VsCodeMessageTypes.getPrompts,
-      });
-      vscode.postMessage({
-        type: VsCodeMessageTypes.getDatasources,
-      });
+      loadCoreData()
     }
-  }, []);
+  }, [loadCoreData]);
 
   // Message Receiving from Extension
   useEffect(() => {
@@ -76,11 +90,11 @@ export const DataProvider = ({ children }) => {
         case UiMessageTypes.stopLoading:
           setIsLoading(false);
           break;
-        case UiMessageTypes.getPrompts:
-          setPrompts(message.data);
+        case UiMessageTypes.getPrompts: 
+          setPrompts(filterByCodeTag(message.data));
           break;
         case UiMessageTypes.getDatasources:
-          setDatasources(message.data);
+          setDatasources(filterByCodeTag(message.data));
           break;
         case UiMessageTypes.getChatResponse:
           setChatHistory(prev => [...prev, {
@@ -118,6 +132,7 @@ export const DataProvider = ({ children }) => {
         prompts,
         datasources,
         sendMessage,
+        loadCoreData,
       }}
     >
       {children}
