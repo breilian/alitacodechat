@@ -239,7 +239,7 @@ const ChatBox = forwardRef(({
     setTimeout(scrollToMessageListEnd, 0);
     
     const { modelSettings, socketConfig, sendMessage } = dataContext
-    
+
     const selectedText = await sendMessage({
       type: VsCodeMessageTypes.getSelectedText
     });
@@ -269,8 +269,9 @@ const ChatBox = forwardRef(({
       return
     }
     if (data.datasource_id) {
-      if (!data.chat_settings_ai || !data.chat_settings_embedding) {
-        setToastMessage('Datasource model or embedding setting is missing. Please select another one for chat.');
+      if (!data.chat_settings_ai?.integration_uid || 
+        !data.chat_settings_embedding?.integration_uid) {
+        setToastMessage('Datasource chat model and/or embedding setting is missing. Please select another one for chat.');
         setToastSeverity('error');
         setShowToast(true);
         return
@@ -279,7 +280,7 @@ const ChatBox = forwardRef(({
         project_id: projectId,
         version_id: data.currentVersionId || data.datasource_id,
         input: question,
-        chat_history: chatHistory.filter(i => i.role !== MESSAGE_REFERENCE_ROLE),
+        chat_history: chatHistory.filter(i => i.role !== MESSAGE_REFERENCE_ROLE).concat(messages),
         context: data.context,
         chat_settings_ai: data.chat_settings_ai,
         chat_settings_embedding: data.chat_settings_embedding
