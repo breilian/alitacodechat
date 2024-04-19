@@ -247,7 +247,7 @@ const ChatBox = forwardRef(({
     const messages = []
     if (selectedText) {
       messages.push({
-        role: ROLES.User,
+        role: ROLES.System,
         content: selectedText
       })
     }
