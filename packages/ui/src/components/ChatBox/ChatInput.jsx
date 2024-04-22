@@ -1,5 +1,6 @@
 import { ChatTypes } from '@/common/constants';
 import {
+  ActionButton,
   ChatInputContainer,
   ParticipantContainer,
   SendButton,
@@ -13,12 +14,15 @@ import { useCtrlEnterKeyEventsHandler } from '@/components/ChatBox/hooks';
 import CommandIcon from '@/components/Icons/CommandIcon';
 import DatabaseIcon from '@/components/Icons/DatabaseIcon';
 import SendIcon from '@/components/Icons/SendIcon';
+import SettingIcon from '@/components/Icons/SettingIcon';
 import DataContext from '@/context/DataContext';
 import { Box, IconButton, Typography, useTheme } from '@mui/material';
 import { forwardRef, useCallback, useContext, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { UiMessageTypes, VsCodeMessageTypes } from 'shared';
 import CancelIcon from '../Icons/CancelIcon';
+import StyledTooltip from '../Tooltip';
 import OptionPopper from './OptionPopper';
+import { VariableDialog } from './VariableDialog';
 
 
 const MAX_ROWS = 15;
@@ -98,16 +102,34 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
     }
   }, [postMessageToVsCode, selectedOption]);
 
+  const [variables, setVariables] = useState([]);
+  const [open, setOpen] = useState(false);
+  const onChangeVariable = useCallback((label, newValue) => {
+    setVariables(prev => prev.map(item =>
+      item.name === label ? { ...item, value: newValue } : item))
+  }, [])
+  const onCancel = useCallback(() => {
+    setOpen(false);
+  }, [])
+  const openVariableDialog = useCallback(() => {
+    setOpen(true);
+  }, [])
+
   // Message Receiving from Extension
   useEffect(() => {
     const messageHandler = event => {
       const message = event.data;
+      const detail = message.data
       switch (message.type) {
         case UiMessageTypes.getPromptDetail:
-          setParticipantDetail(message.data);
+          setParticipantDetail(detail);
+          if (detail?.version_details.variables?.length > 0) {
+            setVariables(detail?.version_details.variables)
+            setOpen(true)
+          }
           break;
         case UiMessageTypes.getDatasourceDetail:
-          setParticipantDetail(message.data);
+          setParticipantDetail(detail);
           break;
       }
     }
@@ -141,7 +163,8 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
       const value = event.target.value;
       const isPrompt = value.startsWith('/');
       const isDatasource = value.startsWith('#');
-      if (isPrompt || isDatasource) {
+      if (event.nativeEvent.inputType !== 'insertFromPaste' &&
+        (isPrompt || isDatasource)) {
         const filterString = value.substring(1).toLowerCase()
         const options = isPrompt ? prompts : datasources
         const optionList = options.filter((item) => item.name.toLowerCase().startsWith(filterString))
@@ -179,6 +202,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
         }
         if (chatWith === ChatTypes.prompt) {
           sendData.prompt_id = selectedOption.id
+          sendData.variables = variables
         } else if (chatWith === ChatTypes.datasource) {
           sendData.datasource_id = selectedOption.id
           const chatSettings = participantDetail.version_details?.datasource_settings?.chat
@@ -198,7 +222,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
         setShowExpandIcon(false);
       }
     }
-  }, [question, disabledSend, chatWith, selectedOption, onSend, clearInputAfterSubmit, participantDetail]);
+  }, [question, disabledSend, chatWith, selectedOption, participantDetail, onSend, clearInputAfterSubmit, variables]);
 
   const { onKeyDown, onCompositionStart, onCompositionEnd } = useCtrlEnterKeyEventsHandler({
     onCtrlEnterDown,
@@ -219,6 +243,12 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
             {chatWith === ChatTypes.prompt && <CommandIcon fontSize="1rem" />}
             {chatWith === ChatTypes.datasource && <DatabaseIcon fontSize="1rem" />}
             <Typography variant='labelSmall'>{selectedOption?.name}</Typography>
+            {variables.length > 0 &&
+              <StyledTooltip title={'Stop generating'} placement="top">
+                <ActionButton onClick={openVariableDialog}>
+                  <SettingIcon sx={{ fontSize: '1.13rem' }} color="icon" />
+                </ActionButton>
+              </StyledTooltip>}
           </Box>
           <IconButton
             size='small'
@@ -233,6 +263,14 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
         setAnchorEl={setAnchorEl}
         options={filteredOptions}
         handleSelect={handleSelectOption}
+      />
+
+      <VariableDialog
+        variables={variables}
+        open={open}
+        setOpen={setOpen}
+        onChangeVariable={onChangeVariable}
+        onCancel={onCancel}
       />
 
       <ChatInputContainer sx={sx} >

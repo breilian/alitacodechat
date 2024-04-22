@@ -46,6 +46,9 @@ export const StyledConfirmButton = styled(Button, {
   background: ${danger ? theme.palette.background.button.danger : theme.palette.background.button.normal};
   color: ${theme.palette.text.secondary};
   text-transform: none;
+  &:focus {
+    outline: none;
+  }
 `));
 
 

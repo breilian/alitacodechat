@@ -30,7 +30,7 @@ const USE_STREAM = true
 const MESSAGE_REFERENCE_ROLE = 'reference'
 
 const generatePayload = ({
-  projectId, prompt_id, type, name, currentVersionId, model_settings
+  projectId, prompt_id, type, name, variables, currentVersionId, model_settings
 }) => ({
   prompt_id,
   projectId,
@@ -41,14 +41,18 @@ const generatePayload = ({
   model_settings,
 
   type,
+  variables: variables ? variables.map(({ name: key, value }) => ({
+    name: key,
+    value,
+  })) : [],
   format_response: true,
 })
 
 const generateChatPayload = ({
-  projectId, prompt_id, question, messages, chatHistory, name, currentVersionId, model_settings
+  projectId, prompt_id, question, messages, variables, chatHistory, name, currentVersionId, model_settings
 }) => {
   const payload = generatePayload({
-    projectId, prompt_id, type: 'chat', name, currentVersionId, model_settings
+    projectId, prompt_id, type: 'chat', variables, name, currentVersionId, model_settings
   })
   payload.chat_history = chatHistory ? chatHistory.map((message) => {
     const { role, content, name: userName } = message;
@@ -238,7 +242,7 @@ const ChatBox = forwardRef(({
 
   const onPredictStream = useCallback(async data => {
     setTimeout(scrollToMessageListEnd, 0);
-    
+
     const { modelSettings, socketConfig, sendMessage } = dataContext
 
     const selectedText = await sendMessage({
@@ -264,13 +268,13 @@ const ChatBox = forwardRef(({
 
     const projectId = socketConfig?.projectId
     if (!projectId) {
-      setToastMessage('AlitaCode extension Project ID settingis missing. Please set it to continue chat.');
+      setToastMessage('Alita Code extension Project ID settingis missing. Please set it to continue chat.');
       setToastSeverity('error');
       setShowToast(true);
       return
     }
     if (data.datasource_id) {
-      if (!data.chat_settings_ai?.integration_uid || 
+      if (!data.chat_settings_ai?.integration_uid ||
         !data.chat_settings_embedding?.integration_uid) {
         setToastMessage('Datasource chat model and/or embedding setting is missing. Please select another one for chat.');
         setToastSeverity('error');
@@ -299,11 +303,12 @@ const ChatBox = forwardRef(({
     if (data.prompt_id && data.currentVersionId) {
       payloadData.prompt_id = data.prompt_id
       payloadData.currentVersionId = data.currentVersionId
+      payloadData.variables = data.variables
     } else {
       if (modelSettings) {
         payloadData.model_settings = modelSettings
       } else {
-        setToastMessage('AlitaCode extension model settings are missing.');
+        setToastMessage('Alita Code extension model settings are missing.');
         setToastSeverity('error');
         setShowToast(true);
         return
