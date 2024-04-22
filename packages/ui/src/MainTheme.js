@@ -109,7 +109,7 @@ const darkModeComponents = {
           caretColor: 'transparent',
           height: '100%',
           '::-webkit-scrollbar': {
-              display: 'none'
+            display: 'none'
           },
           msOverflowStyle: 'none',
         },
@@ -231,7 +231,16 @@ const darkModeComponents = {
         },
 
       }
-    }
+    },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          '&:focus': {
+            outline: 'none'
+          },
+        },
+      }
+    },
   }
 }
 
