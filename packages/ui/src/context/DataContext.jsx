@@ -42,7 +42,7 @@ export const DataProvider = ({ children }) => {
 
   const loadCoreData = useCallback(() => {
     if (!vscodeRef.current) return
-    console.log('loadCoreData', VsCodeMessageTypes);
+    // console.log('loadCoreData', VsCodeMessageTypes);
 
     vscodeRef.current?.postMessage({
       type: VsCodeMessageTypes.getSocketConfig,

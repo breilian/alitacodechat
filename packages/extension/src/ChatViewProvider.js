@@ -44,7 +44,7 @@ class ChatViewProvider {
             break;
           }
           case VsCodeMessageTypes.getPrompts: {
-            this.getResponse(alitaService, 'getPrompts')
+            this.getResponse(alitaService, 'getPrompts', {})
             break;
           }
           case VsCodeMessageTypes.getPromptDetail: {

@@ -170,7 +170,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
         const optionList = options.filter((item) => item.name.toLowerCase().startsWith(filterString))
         if (optionList.length < 1) {
           // eslint-disable-next-line no-console
-          console.log(`No ${isPrompt ? 'prompt' : 'datasource'}options available`)
+          console.log(`No ${isPrompt ? 'prompt' : 'datasource'} options available`)
         } else {
           setFilteredOptions(optionList.length ? optionList : options)
           setChatWith(isPrompt ? ChatTypes.prompt : ChatTypes.datasource)
