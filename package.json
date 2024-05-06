@@ -1,5 +1,5 @@
 {
-  "name": "alitacodechat",  
+  "name": "alitacodechat",
   "displayName": "Alita Code Chat",
   "description": "",
   "publisher": "ProjectAlita",
@@ -76,16 +76,17 @@
     "lint": "npx lerna run lint"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2",
     "@types/mocha": "^10.0.6",
     "@types/node": "18.x",
     "@types/vscode": "^1.87.0",
     "@vscode/test-cli": "^0.0.4",
     "@vscode/test-electron": "^2.3.9",
+    "concurrently": "^8.2.2",
     "eslint": "^8.57.0",
     "lerna": "^8.1.2"
   },
   "dependencies": {
+    "date-fns": "^3.6.0",
     "html-modifier": "^1.2.0"
   },
   "extensionDependencies": [

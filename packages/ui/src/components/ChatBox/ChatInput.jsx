@@ -38,11 +38,13 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
     placeholder = 'Type your message',
     clearInputAfterSubmit = true,
     chatWith,
-    setChatWith
+    setChatWith,
+    setParticipant,
   } = props;
   const {
     datasources,
     prompts,
+    applications,
     postMessageToVsCode,
   } = useContext(DataContext);
   const theme = useTheme();
@@ -63,7 +65,9 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
       if (chatWith) {
         const type = chatWith === ChatTypes.prompt ?
           VsCodeMessageTypes.getPromptDetail :
-          VsCodeMessageTypes.getDatasourceDetail
+          chatWith === ChatTypes.datasource ?
+            VsCodeMessageTypes.getDatasourceDetail :
+            VsCodeMessageTypes.getApplicationDetail
         postMessageToVsCode({
           type,
           data: option.id
@@ -75,10 +79,14 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
   const [filteredOptions, setFilteredOptions] = useState([]);
   const handleSelectOption = useCallback((option) => () => {
     setSelectedOption(option);
-    getParticipantDetail(option);
     setVariables([]);
+    setParticipant({
+      ...option,
+      type: chatWith,
+    })
+    getParticipantDetail(option);
     reset();
-  }, [reset, getParticipantDetail]);
+  }, [getParticipantDetail, setParticipant, chatWith, reset]);
 
   useEffect(() => {
     if (!isLoading) {
@@ -100,8 +108,9 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
   useEffect(() => {
     if (!postMessageToVsCode || !selectedOption) {
       setParticipantDetail(null);
+      setParticipant(null)
     }
-  }, [postMessageToVsCode, selectedOption]);
+  }, [postMessageToVsCode, selectedOption, setParticipant]);
 
   const [variables, setVariables] = useState([]);
   const [open, setOpen] = useState(false);
@@ -121,6 +130,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
     const messageHandler = event => {
       const message = event.data;
       const detail = message.data
+      setParticipant(prev => ({...prev, ...detail}))
       switch (message.type) {
         case UiMessageTypes.getPromptDetail:
           setParticipantDetail(detail);
@@ -132,6 +142,13 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
         case UiMessageTypes.getDatasourceDetail:
           setParticipantDetail(detail);
           break;
+        case UiMessageTypes.getApplicationDetail:
+          setParticipantDetail(detail);
+          if (detail?.version_details.variables?.length > 0) {
+            setVariables(detail?.version_details.variables)
+            setOpen(true)
+          }
+          break;
       }
     }
 
@@ -140,7 +157,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
     return () => {
       window.removeEventListener('message', messageHandler);
     };
-  }, []);
+  }, [setParticipant]);
 
   const onClickExpander = useCallback(
     () => {
@@ -157,24 +174,26 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
     setAnchorEl(null);
     setFilteredOptions([]);
     setSelectedOption(null);
-  }, [setChatWith]);
+    setParticipant(null)
+  }, [setChatWith, setParticipant]);
 
   const onInputQuestion = useCallback(
     (event) => {
       const value = event.target.value;
       const isPrompt = value.startsWith('/');
       const isDatasource = value.startsWith('#');
+      const isApplication = value.startsWith('@');
       if (event.nativeEvent.inputType !== 'insertFromPaste' &&
-        (isPrompt || isDatasource)) {
+        (isPrompt || isDatasource || isApplication)) {
         const filterString = value.substring(1).toLowerCase()
-        const options = isPrompt ? prompts : datasources
+        const options = isPrompt ? prompts : isDatasource ? datasources : applications
         const optionList = options.filter((item) => item.name.toLowerCase().startsWith(filterString))
         if (optionList.length < 1) {
           // eslint-disable-next-line no-console
           console.log(`No ${isPrompt ? 'prompt' : 'datasource'} options available`)
         } else {
           setFilteredOptions(optionList.length ? optionList : options)
-          setChatWith(isPrompt ? ChatTypes.prompt : ChatTypes.datasource)
+          setChatWith(isPrompt ? ChatTypes.prompt : isDatasource ? ChatTypes.datasource : ChatTypes.application)
           setAnchorEl(chatInputRef.current)
         }
       } else {
@@ -185,7 +204,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
       setQuestion(value?.trim() ? value : '');
       setShowExpandIcon(event.target.offsetHeight > MIN_HEIGHT);
     },
-    [datasources, prompts, setChatWith],
+    [applications, datasources, prompts, setChatWith],
   );
 
   const onCtrlEnterDown = useCallback(() => {
@@ -212,6 +231,13 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
             sendData.chat_settings_embedding = chatSettings.chat_settings_embedding
             sendData.chat_settings_ai = chatSettings.chat_settings_ai
           }
+        } else if (chatWith === ChatTypes.application) {
+          sendData.application_id = selectedOption.id
+          sendData.version_id = selectedOption.version_details?.id
+          sendData.instructions = selectedOption.version_details?.instructions
+          sendData.llm_settings = participantDetail.version_details?.llm_settings
+          sendData.tools = participantDetail.version_details?.tools
+          sendData.variables = variables
         }
       }
       onSend(sendData);

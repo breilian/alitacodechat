@@ -1,12 +1,9 @@
 import React, { useState, useCallback } from 'react';
-import { Box } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import ListItem from '@mui/material/ListItem';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
-import { styled } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import Markdown from '../Markdown';
-
-import AlitaIcon from '../Icons/AlitaIcon';
 import CopyIcon from '../Icons/CopyIcon';
 import DeleteIcon from '../Icons/DeleteIcon';
 import RegenerateIcon from '../Icons/RegenerateIcon';
@@ -17,6 +14,26 @@ import ListItemText from "@mui/material/ListItemText";
 import BasicAccordion from "@/components/BasicAccordion.jsx";
 import AnimatedProgress from '@/components/AnimatedProgress';
 import StopCircleOutlinedIcon from '@mui/icons-material/StopCircleOutlined';
+
+import { ChatTypes } from '@/common/constants';
+import ApplicationsIcon from '@/components/Icons/ApplicationsIcon';
+import ConsoleIcon from '@/components/Icons/ConsoleIcon';
+import DatabaseIcon from '@/components/Icons/DatabaseIcon';
+import ModelIcon from '@/components/Icons/ModelIcon';
+import { formatDistanceToNow } from 'date-fns';
+
+export const getIcon = (type, isActive, theme, showBigIcon = false) => {
+  switch (type) {
+    case ChatTypes.prompt:
+      return <ConsoleIcon fontSize='16px' fill={isActive ? theme.palette.icon.fill.tips : theme.palette.icon.fill.default} />
+    case ChatTypes.datasource:
+      return <DatabaseIcon fontSize='16px' sx={{ color: isActive ? theme.palette.icon.fill.tips : theme.palette.icon.fill.default }} />
+    case ChatTypes.application:
+      return <ApplicationsIcon fontSize='16px' fill={isActive ? theme.palette.icon.fill.tips : theme.palette.icon.fill.default}/>
+    default:
+      return <ModelIcon width={showBigIcon ? 24 : 16} height={showBigIcon ? 24 : 16} fill={isActive ? theme.palette.icon.fill.tips : theme.palette.icon.fill.default} />
+  }
+}
 
 export const UserMessageContainer = styled(ListItem)(() => ({
   flex: '1 0 0',
@@ -31,7 +48,7 @@ export const UserMessageContainer = styled(ListItem)(() => ({
   },
 }));
 
-const Answer = styled(Box)(({ theme }) => `
+export const Answer = styled(Box)(({ theme }) => `
   min-height: 36px; 
   flex: 1 0 0;
   color:${theme.palette.text.secondary};
@@ -55,7 +72,7 @@ const AIAnswerContainer = styled(UserMessageContainer)(({ theme }) => `
   background: ${theme.palette.background.aiAnswerBkg};
 `);
 
-const ButtonsContainer = styled(Box)(({ theme }) => `
+export const ButtonsContainer = styled(Box)(({ theme }) => `
 position: absolute;
 top: 6px;
 right: 6px;
@@ -68,7 +85,7 @@ padding-bottom: 2px;
 background: ${theme.palette.background.aiAnswerActions};
 `);
 
-const ReferenceList = ({ references }) => {
+export const ReferenceList = ({ references }) => {
   return (
     <List dense>
       {
@@ -97,7 +114,10 @@ const AIAnswer = React.forwardRef((props, ref) => {
     isLoading = false,
     isStreaming,
     onStop,
+    participant,
+    created_at,
   } = props
+  const theme = useTheme();
   const [showActions, setShowActions] = useState(false);
   const onMouseEnter = useCallback(
     () => {
@@ -115,14 +135,44 @@ const AIAnswer = React.forwardRef((props, ref) => {
   )
 
   return (
-    <AIAnswerContainer ref={ref} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
-      <ListItemAvatar sx={{ minWidth: '24px' }}>
-        <AlitaIcon sx={{ fontSize: 24 }} />
-      </ListItemAvatar>
-      <Answer>
+    <AIAnswerContainer
+      sx={{ flexDirection: 'column', gap: '8px', padding: '12px 0px 12px 0px', background: 'transparent' }}
+      ref={ref}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}>
+      <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '0px 4px 0px 4px' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '10px', height: '100%', maxWidth: 'calc(100% - 150px)', overflow: 'hidden' }}>
+          <Box sx={{ minWidth: '24px', height: '24px', display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', borderRadius: '12px', background: theme.palette.background.aiParticipantIcon }}>
+            {getIcon(participant.type, true, theme, false)}
+          </Box>
+          <Typography
+            variant='bodySmall'
+            sx={{ 
+              overflow: 'hidden', 
+              textOverflow: 'ellipsis', 
+              whiteSpace: 'nowrap',
+            }}
+            color='secondary'>
+            {participant.name || participant.model_name}
+          </Typography>
+        </Box>
+        <Typography variant='bodySmall'>
+          {formatDistanceToNow(new Date(created_at)) + ' ago'}
+        </Typography>
+      </Box>
+      <Answer sx={{
+        background: theme.palette.background.aiAnswerBkg,
+        width: '100%',
+        borderRadius: '8px',
+        padding: '12px 16px 12px 16px',
+        position: 'relative',
+        boxSizing: 'border-box',
+        minHeight: '48px',
+        flex: 1,
+      }}>
         {showActions && <ButtonsContainer>
           {
-            isStreaming && 
+            isStreaming &&
             <StyledTooltip title={'Stop generating'} placement="top">
               <IconButton onClick={onStop}>
                 <StopCircleOutlinedIcon sx={{ fontSize: '1.3rem' }} color="icon" />
@@ -175,7 +225,7 @@ const AIAnswer = React.forwardRef((props, ref) => {
           message='Thinking...'
           duration='2s'
         />}
-        {references?.length > 0 && <BasicAccordion style={{ marginTop:  answer ? '15px' : '37px' }} items={[
+        {references?.length > 0 && <BasicAccordion style={{ marginTop: answer ? '15px' : '37px' }} items={[
           { title: 'References', content: <ReferenceList references={references} /> }
         ]} />}
       </Answer>

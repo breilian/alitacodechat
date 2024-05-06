@@ -159,6 +159,11 @@ export const RoleOptions = [
 ];
 
 export const SocketMessageType = {
+  AgentResponse: 'agent_response',
+  AgentException: 'agent_exception',
+  AgentToolStart: 'agent_tool_start',
+  AgentToolEnd: 'agent_tool_end',
+  AgentToolError: 'agent_tool_error',
   References: 'references',
   Chunk: 'chunk',
   AIMessageChunk: 'AIMessageChunk',
@@ -599,6 +604,8 @@ export const APIKeyTypes = {
 
 
 export const sioEvents = {
+  application_predict: 'application_predict',
+  application_leave_rooms: 'application_leave_rooms',
   promptlib_predict: 'promptlib_predict',
   promptlib_leave_rooms: 'promptlib_leave_rooms',
   datasource_predict: 'datasource_predict',
@@ -611,4 +618,12 @@ export const ChatTypes = {
   datasource: 'datasource',
   model: 'model',
   application: 'application'
+}
+
+export const ToolActionStatus = {
+  complete: 'complete',
+  error: 'error',
+  actionRequired: 'action_required',
+  cancelled: 'cancelled',
+  processing: 'processing'
 }

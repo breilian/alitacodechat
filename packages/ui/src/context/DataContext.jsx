@@ -21,6 +21,7 @@ export const DataProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [prompts, setPrompts] = useState([]);
   const [datasources, setDatasources] = useState([]);
+  const [applications, setApplications] = useState([]);
   const vscodeRef = useRef(null);
   const [modelSettings, setModelSettings] = useState(null);
 
@@ -55,6 +56,9 @@ export const DataProvider = ({ children }) => {
     });
     vscodeRef.current?.postMessage({
       type: VsCodeMessageTypes.getDatasources,
+    });
+    vscodeRef.current?.postMessage({
+      type: VsCodeMessageTypes.getApplications,
     });
   }, []);
 
@@ -98,6 +102,9 @@ export const DataProvider = ({ children }) => {
         case UiMessageTypes.getDatasources:
           setDatasources(filterByCodeTag(message.data));
           break;
+        case UiMessageTypes.getApplications:
+          setApplications(filterByCodeTag(message.data));
+          break;
         case UiMessageTypes.getChatResponse:
           setChatHistory(prev => [...prev, {
             ...message.data,
@@ -133,6 +140,7 @@ export const DataProvider = ({ children }) => {
         isLoading,
         prompts,
         datasources,
+        applications,
         sendMessage,
         loadCoreData,
       }}

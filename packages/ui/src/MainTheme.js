@@ -9,6 +9,7 @@ const white20 = 'rgba(255, 255, 255, 0.20)';
 const white50 = 'rgba(255, 255, 255, 0.50)';
 const veryLightBlue = '#C7EBFF';
 const skyBlue = '#29B8F5';
+const skyBlue20 = 'rgba(41, 184, 245, 0.20)';
 const gray00 = '#D3DBE2';
 const gray10 = '#A9B7C1';
 const gray20 = '#686C76';
@@ -331,6 +332,7 @@ const getDesignTokens = mode => ({
       text: {
         highlight: orange,
       },
+      aiParticipantIcon: skyBlue20,
       aiAnswerBkg: '#262B34',
       aiAnswerActions: 'linear-gradient(270deg, #262B34 82.5%, rgba(38, 43, 52, 0.00) 100%)',
       userMessageActions: 'linear-gradient(270deg, #0E131D 82.5%, rgba(14, 19, 29, 0.00) 100%)',
