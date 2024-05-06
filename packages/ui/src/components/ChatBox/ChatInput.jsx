@@ -76,6 +76,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
   const handleSelectOption = useCallback((option) => () => {
     setSelectedOption(option);
     getParticipantDetail(option);
+    setVariables([]);
     reset();
   }, [reset, getParticipantDetail]);
 
