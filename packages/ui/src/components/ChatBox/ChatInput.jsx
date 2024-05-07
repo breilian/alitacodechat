@@ -145,8 +145,9 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
         case UiMessageTypes.getApplicationDetail:
           setParticipantDetail(detail);
           if (detail?.version_details.variables?.length > 0) {
-            setVariables(detail?.version_details?.variables?.filter(variable => !ApplicationSystemVariables.includes(variable.name)))
-            setOpen(true)
+            const filterVariables = detail?.version_details?.variables?.filter(variable => !ApplicationSystemVariables.includes(variable.name)) || []
+            setVariables(filterVariables)
+            setOpen(filterVariables.length > 0)
           }
           break;
       }
