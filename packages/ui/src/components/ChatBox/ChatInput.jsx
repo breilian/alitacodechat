@@ -1,4 +1,4 @@
-import { ChatTypes } from '@/common/constants';
+import { ApplicationSystemVariables, ChatTypes } from '@/common/constants';
 import {
   ActionButton,
   ChatInputContainer,
@@ -145,7 +145,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
         case UiMessageTypes.getApplicationDetail:
           setParticipantDetail(detail);
           if (detail?.version_details.variables?.length > 0) {
-            setVariables(detail?.version_details.variables)
+            setVariables(detail?.version_details?.variables?.filter(variable => !ApplicationSystemVariables.includes(variable.name)))
             setOpen(true)
           }
           break;
