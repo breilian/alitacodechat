@@ -6,7 +6,9 @@ export const VsCodeMessageTypes = {
   getPromptDetail: 'extension.getPromptDetail',
   getDatasourceDetail: 'extension.getDatasourceDetail',
   getSocketConfig: 'extension.getSocketConfig',
-  getModelSettings: 'extension.getModelSettings'
+  getModelSettings: 'extension.getModelSettings',
+  getApplicationDetail: 'extension.getApplicationDetail',
+  getApplications: 'extension.getApplications',
 }
 
 export const UiMessageTypes = {
@@ -20,5 +22,7 @@ export const UiMessageTypes = {
   getDatasources: 'ui.getDatasources',
   getChatResponse: 'ui.getChatResponse',
   getSocketConfig: 'ui.getSocketConfig',
-  getModelSettings: 'ui.getModelSettings'
+  getModelSettings: 'ui.getModelSettings',
+  getApplicationDetail: 'ui.getApplicationDetail',
+  getApplications: 'ui.getApplications',
 }

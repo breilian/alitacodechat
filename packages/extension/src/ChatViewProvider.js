@@ -59,6 +59,14 @@ class ChatViewProvider {
             this.getResponse(alitaService, 'getDatasourceDetail', message.data)
             break;
           }
+          case VsCodeMessageTypes.getApplications: {
+            this.getResponse(alitaService, 'getApplications')
+            break;
+          }
+          case VsCodeMessageTypes.getApplicationDetail: {
+            this.getResponse(alitaService, 'getApplicationDetail', message.data)
+            break;
+          }
           case VsCodeMessageTypes.getChatResponse: {
             this.getResponse(alitaService, 'chat', message.data, 'getChatResponse')
             break;

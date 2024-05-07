@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-no-bind */
 /* eslint-disable no-unused-vars */
-import { ROLES, sioEvents, SocketMessageType, ChatTypes } from '@/common/constants';
+import { ROLES, sioEvents, SocketMessageType, ChatTypes, ToolActionStatus } from '@/common/constants';
 import { VsCodeMessageTypes } from 'shared';
 import { buildErrorMessage } from '@/common/utils';
 import { forwardRef, useCallback, useContext, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
@@ -25,6 +25,7 @@ import { useStopStreaming } from './hooks';
 import ClearIcon from '../Icons/ClearIcon';
 import DataContext from '@/context/DataContext';
 import SocketContext from '@/context/SocketContext';
+import ApplicationAnswer from './ApplicationAnswer';
 
 const USE_STREAM = true
 const MESSAGE_REFERENCE_ROLE = 'reference'
@@ -89,7 +90,18 @@ const ChatBox = forwardRef(({
   const [isRunning, setIsRunning] = useState(false);
   const chatHistoryRef = useRef(chatHistory);
   const [chatWith, setChatWith] = useState('')
+  const [participant, setParticipant] = useState(null)
+  const participantRef = useRef(participant)
 
+  useEffect(() => {
+    participantRef.current = participant
+  }, [participant])
+
+  const chatWithRef = useRef(chatWith)
+
+  useEffect(() => {
+    chatWithRef.current = chatWith
+  }, [chatWith])
 
   const {
     openAlert,
@@ -126,6 +138,8 @@ const ChatBox = forwardRef(({
         role: ROLES.Assistant,
         content: '',
         isLoading: false,
+        participant: participantRef.current,
+        created_at: new Date().getTime()
       }
     } else {
       msg = chatHistoryRef.current[msgIdx]
@@ -169,6 +183,7 @@ const ChatBox = forwardRef(({
         }
       }
     };
+    let t
 
     switch (socketMessageType) {
       case SocketMessageType.StartTask:
@@ -184,12 +199,34 @@ const ChatBox = forwardRef(({
         break
       case SocketMessageType.Chunk:
       case SocketMessageType.AIMessageChunk:
+      case SocketMessageType.AgentResponse:
         msg.content += message.content
         msg.isLoading = false
         msg.isStreaming = true
         setTimeout(scrollToMessageBottom, 0);
         if (response_metadata?.finish_reason) {
           msg.isStreaming = false
+        }
+        break
+      case SocketMessageType.AgentToolStart:
+        if (msg.toolActions === undefined) {
+          msg.toolActions = []
+        }
+        if (!msg.toolActions.find(i => i.id === message?.response_metadata?.tool_run_id)) {
+          msg.toolActions.push({
+            name: message?.response_metadata?.tool_name,
+            id: message?.response_metadata?.tool_run_id,
+            status: ToolActionStatus.processing
+          })
+        }
+        break
+      case SocketMessageType.AgentToolEnd:
+        t = msg.toolActions.find(i => i.id === message?.response_metadata?.tool_run_id)
+        if (t) {
+          Object.assign(t, {
+            content: message?.content,
+            status: ToolActionStatus.complete
+          })
         }
         break
       case SocketMessageType.References:
@@ -200,6 +237,12 @@ const ChatBox = forwardRef(({
         msg.isStreaming = false
         handleError({ data: message.content || [] })
         return
+      case SocketMessageType.AgentException: {
+        msg.isLoading = false
+        msg.isStreaming = false;
+        msg.exception = message.content;
+        break;
+      }
       case SocketMessageType.Freeform:
         break
       default:
@@ -215,7 +258,11 @@ const ChatBox = forwardRef(({
 
   const dataContext = useContext(DataContext);
   const { emit } = useSocket(
-    chatWith === ChatTypes.datasource ? sioEvents.datasource_predict : sioEvents.promptlib_predict,
+    chatWith === ChatTypes.datasource ?
+      sioEvents.datasource_predict :
+      chatWith === ChatTypes.application ?
+        sioEvents.application_predict :
+        sioEvents.promptlib_predict,
     handleSocketEvent
   )
 
@@ -263,6 +310,7 @@ const ChatBox = forwardRef(({
         role: ROLES.User,
         name,
         content: question,
+        created_at: new Date()
       }]
     })
 
@@ -273,7 +321,22 @@ const ChatBox = forwardRef(({
       setShowToast(true);
       return
     }
-    if (data.datasource_id) {
+
+    if (data.application_id) {
+      if (!data.llm_settings?.integration_uid) {
+        setToastMessage('Application chat model is missing. Please select another one for chat.');
+        setToastSeverity('error');
+        setShowToast(true);
+        return
+      }
+      emit({
+        ...data,
+        project_id: projectId,
+        user_input: question,
+        chat_history: chatHistory.filter(i => i.role !== MESSAGE_REFERENCE_ROLE).concat(messages),
+      })
+      return
+    } else if (data.datasource_id) {
       if (!data.chat_settings_ai?.integration_uid ||
         !data.chat_settings_embedding?.integration_uid) {
         setToastMessage('Datasource chat model and/or embedding setting is missing. Please select another one for chat.');
@@ -291,31 +354,32 @@ const ChatBox = forwardRef(({
         chat_settings_embedding: data.chat_settings_embedding
       })
       return
-    }
-
-    const payloadData = {
-      projectId,
-      question,
-      chatHistory,
-      name,
-      messages
-    }
-    if (data.prompt_id && data.currentVersionId) {
-      payloadData.prompt_id = data.prompt_id
-      payloadData.currentVersionId = data.currentVersionId
-      payloadData.variables = data.variables
     } else {
-      if (modelSettings) {
-        payloadData.model_settings = modelSettings
-      } else {
-        setToastMessage('Alita Code extension model settings are missing.');
-        setToastSeverity('error');
-        setShowToast(true);
-        return
+
+      const payloadData = {
+        projectId,
+        question,
+        chatHistory,
+        name,
+        messages
       }
+      if (data.prompt_id && data.currentVersionId) {
+        payloadData.prompt_id = data.prompt_id
+        payloadData.currentVersionId = data.currentVersionId
+        payloadData.variables = data.variables
+      } else {
+        if (modelSettings) {
+          payloadData.model_settings = modelSettings
+        } else {
+          setToastMessage('Alita Code extension model settings are missing.');
+          setToastSeverity('error');
+          setShowToast(true);
+          return
+        }
+      }
+      const payload = generateChatPayload(payloadData)
+      emit(payload)
     }
-    const payload = generateChatPayload(payloadData)
-    emit(payload)
   },
     [scrollToMessageListEnd, setChatHistory, dataContext, chatHistory, emit])
 
@@ -332,7 +396,11 @@ const ChatBox = forwardRef(({
 
 
   const { emit: manualEmit } = useManualSocket(
-    chatWith === ChatTypes.datasource ? sioEvents.datasource_leave_rooms : sioEvents.promptlib_leave_rooms
+    chatWith === ChatTypes.datasource ?
+      sioEvents.datasource_leave_rooms :
+      chatWith === ChatTypes.application ?
+        sioEvents.application_leave_rooms :
+        sioEvents.promptlib_leave_rooms
   );
   const {
     isStreaming,
@@ -391,6 +459,9 @@ const ChatBox = forwardRef(({
         <MessageList sx={messageListSX}>
           {
             chatHistory.map((message, index) => {
+              if (!message.created_at) {
+                message.created_at = new Date()
+              }
               return message.role === 'user' ?
                 <UserMessage
                   key={message.id}
@@ -398,20 +469,41 @@ const ChatBox = forwardRef(({
                   content={message.content}
                   onCopy={onCopyToClipboard(message.id)}
                   onDelete={onDeleteAnswer(message.id)}
+                  created_at={message.created_at}
                 />
                 :
-                <AIAnswer
-                  key={message.id}
-                  ref={(ref) => (listRefs.current[index] = ref)}
-                  answer={message.content}
-                  onStop={onStopStreaming(message.id)}
-                  onCopy={onCopyToClipboard(message.id)}
-                  onDelete={onDeleteAnswer(message.id)}
-                  shouldDisableRegenerate={isLoading}
-                  references={message.references}
-                  isLoading={Boolean(message.isLoading)}
-                  isStreaming={message.isStreaming}
-                />
+                message.participant?.type !== ChatTypes.application ?
+                  <AIAnswer
+                    key={message.id}
+                    ref={(ref) => (listRefs.current[index] = ref)}
+                    answer={message.content}
+                    participant={message.participant}
+                    onStop={onStopStreaming(message.id)}
+                    onCopy={onCopyToClipboard(message.id)}
+                    onDelete={onDeleteAnswer(message.id)}
+                    shouldDisableRegenerate={isLoading || isStreaming || Boolean(message.isLoading)}
+                    references={message.references}
+                    isLoading={Boolean(message.isLoading)}
+                    isStreaming={message.isStreaming}
+                    created_at={message.created_at}
+                  />
+                  :
+                  <ApplicationAnswer
+                    key={message.id}
+                    ref={(ref) => (listRefs.current[index] = ref)}
+                    answer={message.content}
+                    participant={message.participant}
+                    onStop={onStopStreaming(message.id)}
+                    onCopy={onCopyToClipboard(message.id)}
+                    onDelete={onDeleteAnswer(message.id)}
+                    shouldDisableRegenerate={isLoading || isStreaming || Boolean(message.isLoading)}
+                    references={message.references}
+                    exception={message.exception}
+                    toolActions={message.toolActions || []}
+                    isLoading={Boolean(message.isLoading)}
+                    isStreaming={message.isStreaming}
+                    created_at={message.created_at}
+                  />
             })
           }
           <div ref={messagesEndRef} />
@@ -419,10 +511,11 @@ const ChatBox = forwardRef(({
         <ChatInput
           onSend={onSend}
           ref={chatInput}
-          isLoading={isLoading}
+          isLoading={isLoading || isStreaming}
           disabledSend={isLoading}
           chatWith={chatWith}
           setChatWith={setChatWith}
+          setParticipant={setParticipant}
           shouldHandleEnter />
         <Toast
           open={showToast}
