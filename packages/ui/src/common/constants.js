@@ -627,3 +627,11 @@ export const ToolActionStatus = {
   cancelled: 'cancelled',
   processing: 'processing'
 }
+
+export const ApplicationSystemVariables = [
+  'agent_scratchpad',
+  'chat_history',
+  'input',
+  'tool_names',
+  'tools',
+]

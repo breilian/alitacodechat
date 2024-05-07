@@ -1,4 +1,4 @@
-import { ChatTypes } from '@/common/constants';
+import { ApplicationSystemVariables, ChatTypes } from '@/common/constants';
 import {
   ActionButton,
   ChatInputContainer,
@@ -145,7 +145,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
         case UiMessageTypes.getApplicationDetail:
           setParticipantDetail(detail);
           if (detail?.version_details.variables?.length > 0) {
-            setVariables(detail?.version_details.variables)
+            setVariables(detail?.version_details?.variables?.filter(variable => !ApplicationSystemVariables.includes(variable.name)))
             setOpen(true)
           }
           break;
@@ -233,8 +233,8 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
           }
         } else if (chatWith === ChatTypes.application) {
           sendData.application_id = selectedOption.id
-          sendData.version_id = selectedOption.version_details?.id
-          sendData.instructions = selectedOption.version_details?.instructions
+          sendData.version_id = participantDetail.version_details?.id
+          sendData.instructions = participantDetail.version_details?.instructions
           sendData.llm_settings = participantDetail.version_details?.llm_settings
           sendData.tools = participantDetail.version_details?.tools
           sendData.variables = variables
@@ -271,7 +271,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
             {chatWith === ChatTypes.datasource && <DatabaseIcon fontSize="1rem" />}
             <Typography variant='labelSmall'>{selectedOption?.name}</Typography>
             {variables.length > 0 &&
-              <StyledTooltip title={'Stop generating'} placement="top">
+              <StyledTooltip title={'Settings'} placement="top">
                 <ActionButton onClick={openVariableDialog}>
                   <SettingIcon sx={{ fontSize: '1.13rem' }} color="icon" />
                 </ActionButton>
