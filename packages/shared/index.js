@@ -26,4 +26,5 @@ export const UiMessageTypes = {
   getModelSettings: 'ui.getModelSettings',
   getApplicationDetail: 'ui.getApplicationDetail',
   getApplications: 'ui.getApplications',
+  settingsChanged: 'ui.settingsChanged',
 }

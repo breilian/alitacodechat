@@ -126,6 +126,12 @@ class ChatViewProvider {
     })
   }
 
+  sendSettingChanged() {
+    this.sendMessageToWebView({
+      type: UiMessageTypes.settingsChanged,
+    })
+  }
+
   sendMessageToWebView(message) {
     this._view.webview.postMessage(message)
   }
