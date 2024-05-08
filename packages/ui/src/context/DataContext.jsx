@@ -105,6 +105,9 @@ export const DataProvider = ({ children }) => {
         case UiMessageTypes.getApplications:
           setApplications(filterByCodeTag(message.data));
           break;
+        case UiMessageTypes.settingsChanged:
+          loadCoreData();
+          break;
         case UiMessageTypes.getChatResponse:
           setChatHistory(prev => [...prev, {
             ...message.data,
@@ -126,7 +129,7 @@ export const DataProvider = ({ children }) => {
     return () => {
       window.removeEventListener('message', messageHandler);
     };
-  }, [messagePromises]);
+  }, [loadCoreData, messagePromises]);
 
   return (
     <DataContext.Provider

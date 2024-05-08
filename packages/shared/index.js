@@ -9,6 +9,7 @@ export const VsCodeMessageTypes = {
   getModelSettings: 'extension.getModelSettings',
   getApplicationDetail: 'extension.getApplicationDetail',
   getApplications: 'extension.getApplications',
+  copyCodeToEditor: 'extension.copyCodeToEditor',
 }
 
 export const UiMessageTypes = {
@@ -25,4 +26,5 @@ export const UiMessageTypes = {
   getModelSettings: 'ui.getModelSettings',
   getApplicationDetail: 'ui.getApplicationDetail',
   getApplications: 'ui.getApplications',
+  settingsChanged: 'ui.settingsChanged',
 }

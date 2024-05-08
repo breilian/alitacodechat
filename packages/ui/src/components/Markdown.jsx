@@ -3,6 +3,12 @@ import styled from '@emotion/styled';
 import Link from '@mui/material/Link';
 import { marked } from 'marked'
 import { Highlight, themes } from 'prism-react-renderer';
+import { Box, useTheme } from '@mui/material';
+import Tooltip from '@/components/Tooltip';
+import { useCallback, useContext } from 'react';
+import DataContext from '@/context/DataContext';
+import { VsCodeMessageTypes } from 'shared';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 const MarkdownMapping = {
   h1: {
@@ -64,7 +70,24 @@ const StyledDiv = styled('div')(() => `
 `);
 
 const Markdown = ({ children }) => {
+  const theme = useTheme();
   const markedTokens = marked.lexer(children || '')
+  const {
+    postMessageToVsCode,
+  } = useContext(DataContext);
+  const onCopyToEditor = useCallback(
+    (code, language) => () => {
+      postMessageToVsCode && postMessageToVsCode({
+        type: VsCodeMessageTypes.copyCodeToEditor,
+        data: {
+          code,
+          language,
+        }
+      });
+    },
+    [postMessageToVsCode],
+  )
+
   return markedTokens.map(
     (markedToken, index) => markedToken.type === 'code' && markedToken.lang ? <Highlight
       key={index}
@@ -72,8 +95,15 @@ const Markdown = ({ children }) => {
       code={markedToken.text}
       language={markedToken.lang}
     >
-      {({ className, style, tokens, getLineProps, getTokenProps }) => (
-        <pre className={className} style={style}>
+      {({ className, style = {}, tokens, getLineProps, getTokenProps }) => (
+        <pre className={className} style={{ ...style, whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
+          <Box sx={{ width: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', padding: '8px 8px 8px 0' }}>
+            <Tooltip title='Copy to editor'>
+              <Box onClick={onCopyToEditor(markedToken.text, markedToken.lang)} sx={{ height: '24px', width: '24px', display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' }}>
+                <ContentCopyIcon sx={{ fontSize: '16px', color: theme.palette.icon.fill.primary }} />
+              </Box>
+            </Tooltip>
+          </Box>
           {tokens.map((line, i) => (
             <div key={i} {...getLineProps({ line })}>
               <span>{' '}</span>
