@@ -106,7 +106,8 @@ const ApplicationAnswer = React.forwardRef((props, ref) => {
             borderRadius: '4px',
             padding: '12px 16px 12px 16px',
             position: 'relative',
-            marginTop: toolActions.length ? '8px' : '0px'
+            marginTop: toolActions.length ? '8px' : '0px',
+            minHeight: '48px'
           }}>
           {showActions && <ButtonsContainer sx={{ top: '6px', right: '6px' }}>
             {
@@ -118,7 +119,7 @@ const ApplicationAnswer = React.forwardRef((props, ref) => {
               </StyledTooltip>
             }
             {
-              onCopy && <StyledTooltip title={'Copy to clipboard'} placement="top">
+              onCopy && !!answer && <StyledTooltip title={'Copy to clipboard'} placement="top">
                 <IconButton onClick={onCopy}>
                   <CopyIcon sx={{ fontSize: '1.13rem' }} />
                 </IconButton>

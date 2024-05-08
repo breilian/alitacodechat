@@ -208,6 +208,9 @@ const ChatBox = forwardRef(({
           msg.isStreaming = false
         }
         break
+      case SocketMessageType.AgentStart:
+        msg.isStreaming = true
+        break
       case SocketMessageType.AgentToolStart:
         if (msg.toolActions === undefined) {
           msg.toolActions = []
@@ -316,7 +319,7 @@ const ChatBox = forwardRef(({
 
     const projectId = socketConfig?.projectId
     if (!projectId) {
-      setToastMessage('Alita Code extension Project ID settingis missing. Please set it to continue chat.');
+      setToastMessage('Alita Code extension Project ID setting is missing. Please set it to continue chat.');
       setToastSeverity('error');
       setShowToast(true);
       return
@@ -355,7 +358,6 @@ const ChatBox = forwardRef(({
       })
       return
     } else {
-
       const payloadData = {
         projectId,
         question,

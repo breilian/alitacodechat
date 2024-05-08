@@ -164,6 +164,7 @@ export const SocketMessageType = {
   AgentToolStart: 'agent_tool_start',
   AgentToolEnd: 'agent_tool_end',
   AgentToolError: 'agent_tool_error',
+  AgentStart: 'agent_start',
   References: 'references',
   Chunk: 'chunk',
   AIMessageChunk: 'AIMessageChunk',

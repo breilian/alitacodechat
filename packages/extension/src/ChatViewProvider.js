@@ -3,6 +3,17 @@ const vscode = require('vscode');
 const { getAlitaService } = require('./consts');
 const { VsCodeMessageTypes, UiMessageTypes } = require('shared');
 
+const getLanguage = (language) => {
+  switch ((language || '').toLowerCase()) {
+    case 'jsx':
+      return 'javascriptreact'
+    case 'tsx':
+      return 'typescriptreact'
+    default:
+      return language;
+  }
+}
+
 const chatViewBuildPath = 'dist';
 class ChatViewProvider {
   constructor(
@@ -79,6 +90,10 @@ class ChatViewProvider {
             this.getResponse(alitaService, 'getSocketConfig')
             break;
           }
+          case VsCodeMessageTypes.copyCodeToEditor: {
+            this.copyCodeToEditor(message.data)
+            break;
+          }
         }
       } catch (err) {
         console.error(err)
@@ -89,14 +104,14 @@ class ChatViewProvider {
   getSelectedText() {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
-        return; // No open text editor
+      return; // No open text editor
     }
 
     const selection = editor.selection;
-    const text =  editor.document.getText(selection);
+    const text = editor.document.getText(selection);
 
     return text && text.trim();
-}
+  }
 
 
   startLoading() {
@@ -136,6 +151,30 @@ class ChatViewProvider {
         type: UiMessageTypes.error,
         message: 'Alita service not found'
       })
+    }
+  }
+
+  copyCodeToEditor({ code, language }) {
+    const editor = vscode.window.activeTextEditor
+    if (editor) {
+      editor.edit((editBuilder) => {
+        const cursorLineNotEmpty = editor.document.lineAt(editor.selection.end.line).isEmptyOrWhitespace
+        if (cursorLineNotEmpty) {
+          editBuilder.insert(editor.selection.end, '\n')
+        }
+        editBuilder.insert(editor.selection.end, code)
+      })
+    } else {
+      vscode.workspace.openTextDocument({ language })
+        .then(doc => {
+          vscode.window.showTextDocument(doc, vscode.ViewColumn.Beside)
+            .then(editor => {
+              vscode.languages.setTextDocumentLanguage(doc, getLanguage(language));
+              editor.edit((editBuilder) => {
+                editBuilder.insert(new vscode.Position(0, 0), code);
+              });
+            });
+        });
     }
   }
 
