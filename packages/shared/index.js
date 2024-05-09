@@ -10,6 +10,8 @@ export const VsCodeMessageTypes = {
   getApplicationDetail: 'extension.getApplicationDetail',
   getApplications: 'extension.getApplications',
   copyCodeToEditor: 'extension.copyCodeToEditor',
+  stopDatasourceTask: 'extension.stopDatasourceTask',
+  stopApplicationTask: 'extension.stopApplicationTask',
 }
 
 export const UiMessageTypes = {
@@ -27,4 +29,6 @@ export const UiMessageTypes = {
   getApplicationDetail: 'ui.getApplicationDetail',
   getApplications: 'ui.getApplications',
   settingsChanged: 'ui.settingsChanged',
+  stopDatasourceTask: 'ui.stopDatasourceTask',
+  stopApplicationTask: 'ui.stopApplicationTask',
 }
