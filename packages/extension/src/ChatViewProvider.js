@@ -94,6 +94,14 @@ class ChatViewProvider {
             this.copyCodeToEditor(message.data)
             break;
           }
+          case VsCodeMessageTypes.stopDatasourceTask: {
+            this.getResponse(alitaService, 'stopDatasourceTask', message.data, '', message.id)
+            break;
+          }
+          case VsCodeMessageTypes.stopApplicationTask: {
+            this.getResponse(alitaService, 'stopApplicationTask', message.data, '', message.id)
+            break;
+          }
         }
       } catch (err) {
         console.error(err)
@@ -136,26 +144,29 @@ class ChatViewProvider {
     this._view.webview.postMessage(message)
   }
 
-  getResponse(alitaService, operation, params, messageType) {
+  getResponse(alitaService, operation, params, messageType, originalMessageId) {
     if (alitaService) {
       this.startLoading()
       alitaService[operation](params).then(data => {
         this.sendMessageToWebView({
           type: UiMessageTypes[messageType || operation],
           data,
+          id: originalMessageId,
         })
         this.stopLoading()
       }).catch(err => {
         this.sendMessageToWebView({
           type: UiMessageTypes.error,
-          message: err
+          message: err,
+          id: originalMessageId
         })
         this.stopLoading()
       })
     } else {
       this.sendMessageToWebView({
         type: UiMessageTypes.error,
-        message: 'Alita service not found'
+        message: 'Alita service not found',
+        id: originalMessageId
       })
     }
   }

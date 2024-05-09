@@ -23,6 +23,7 @@ import CancelIcon from '../Icons/CancelIcon';
 import StyledTooltip from '../Tooltip';
 import OptionPopper from './OptionPopper';
 import { VariableDialog } from './VariableDialog';
+import ApplicationsIcon from '../Icons/ApplicationsIcon';
 
 
 const MAX_ROWS = 15;
@@ -270,6 +271,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
           <Box display='flex' alignItems='center' gap='8px'>
             {chatWith === ChatTypes.prompt && <CommandIcon fontSize="1rem" />}
             {chatWith === ChatTypes.datasource && <DatabaseIcon fontSize="1rem" />}
+            {chatWith === ChatTypes.application && <ApplicationsIcon fontSize="1rem" />}
             <Typography variant='labelSmall'>{selectedOption?.name}</Typography>
             {variables.length > 0 &&
               <StyledTooltip title={'Settings'} placement="top">

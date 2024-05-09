@@ -1,5 +1,6 @@
-import { ROLES } from '@/common/constants';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ChatTypes, ROLES } from '@/common/constants';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { VsCodeMessageTypes } from 'shared';
 
 export const useCtrlEnterKeyEventsHandler = ({ onShiftEnterPressed, onCtrlEnterDown, onEnterDown }) => {
   const [isInComposition, setIsInComposition] = useState(false)
@@ -35,37 +36,64 @@ export const useStopStreaming = ({
   chatHistory,
   setChatHistory,
   manualEmit,
+  sendMessage,
 }) => {
   const isStreaming = useMemo(() => chatHistory.some(msg => msg.isStreaming), [chatHistory]);
 
   const onStopStreaming = useCallback(
-    (streamId) => () => {
+    (message) => async () => {
+      const { id: streamId, task_id, participant } = message
+      if (task_id) {
+        const { type } = participant
+        if (type == ChatTypes.datasource) {
+          await sendMessage({ type: VsCodeMessageTypes.stopDatasourceTask, data: task_id })
+        } else if (type === ChatTypes.application) {
+          await sendMessage({ type: VsCodeMessageTypes.stopApplicationTask, data: task_id })
+        }
+      }
       manualEmit([streamId]);
-      setTimeout(() => setChatHistory(prevState =>
-        prevState.map(msg => ({
-          ...msg,
-          isStreaming: msg.id === streamId ? false : msg.isStreaming,
-          isLoading: msg.id === streamId ? false : msg.isLoading
-        }))
+      setTimeout(() => setChatHistory(prevState => prevState.map(msg => ({
+        ...msg,
+        isStreaming: msg.id === streamId ? false : msg.isStreaming,
+        isLoading: msg.id === streamId ? false : msg.isLoading,
+        task_id: undefined,
+      }))
       ), 200);
     },
-    [manualEmit, setChatHistory],
+    [manualEmit, sendMessage, setChatHistory],
   );
 
-  const onStopAll = useCallback(() => {
-    const streamIds = chatHistoryRef.current.filter(message => message.role !== ROLES.User).map(message => message.id);
+  const onStopAll = useCallback(async () => {
+    const streamIds = chatHistoryRef.current.filter(message => message.role !== ROLES.User && message.isStreaming).map(message => message.id);
+    const messagesWithTaskId = chatHistoryRef.current.filter(message => message.role !== ROLES.User && message.task_id && message.isStreaming)
+    messagesWithTaskId.forEach(async (message) => {
+      const { participant, task_id } = message;
+      if (task_id) {
+        const { type } = participant
+        if (type == ChatTypes.datasource) {
+          await sendMessage({ type: VsCodeMessageTypes.stopDatasourceTask, data: task_id })
+        } else if (type === ChatTypes.application) {
+          await sendMessage({ type: VsCodeMessageTypes.stopApplicationTask, data: task_id })
+        }
+      }
+    });
     manualEmit(streamIds);
     setTimeout(() => setChatHistory(prevState =>
-      prevState.map(msg => ({ ...msg, isStreaming: false, isLoading: false }))
+      prevState.map(msg => ({ ...msg, isStreaming: false, isLoading: false, task_id: undefined }))
     ), 200);
-  }, [chatHistoryRef, manualEmit, setChatHistory]);
+  }, [chatHistoryRef, manualEmit, sendMessage, setChatHistory]);
 
+  const stopAllRef = useRef(onStopAll)
+
+  useEffect(() => {
+    stopAllRef.current = onStopAll
+  }, [onStopAll])
 
   useEffect(() => {
     return () => {
-      onStopAll();
+      stopAllRef.current?.();
     };
-  }, [onStopAll])
+  }, [])
 
   return {
     isStreaming,

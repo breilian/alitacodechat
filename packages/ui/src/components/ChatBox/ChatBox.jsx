@@ -166,8 +166,9 @@ const ChatBox = forwardRef(({
   }, [])
 
   const handleSocketEvent = useCallback(async message => {
-    const { stream_id, type: socketMessageType, message_type, response_metadata } = message
-    const [msgIndex, msg] = getMessage(stream_id, message_type)
+    const { stream_id, message_id, type: socketMessageType, message_type, response_metadata } = message
+    const { task_id } = message.content instanceof Object ? message.content : {}
+    const [msgIndex, msg] = getMessage(stream_id || message_id, message_type)
 
     const scrollToMessageBottom = () => {
       if (sessionStorage.getItem(AUTO_SCROLL_KEY) === 'true') {
@@ -188,9 +189,10 @@ const ChatBox = forwardRef(({
     switch (socketMessageType) {
       case SocketMessageType.StartTask:
         msg.isLoading = true
-        msg.isStreaming = false
+        msg.isStreaming = true
         msg.content = ''
         msg.references = []
+        msg.task_id = task_id
         msgIndex === -1 ? setChatHistory(prevState => [...prevState, msg]) : setChatHistory(prevState => {
           prevState[msgIndex] = msg
           return [...prevState]
@@ -202,14 +204,10 @@ const ChatBox = forwardRef(({
       case SocketMessageType.AgentResponse:
         msg.content += message.content
         msg.isLoading = false
-        msg.isStreaming = true
         setTimeout(scrollToMessageBottom, 0);
         if (response_metadata?.finish_reason) {
           msg.isStreaming = false
         }
-        break
-      case SocketMessageType.AgentStart:
-        msg.isStreaming = true
         break
       case SocketMessageType.AgentToolStart:
         if (msg.toolActions === undefined) {
@@ -413,6 +411,7 @@ const ChatBox = forwardRef(({
     chatHistory,
     setChatHistory,
     manualEmit,
+    sendMessage: dataContext.sendMessage
   });
 
   const [showToast, setShowToast] = useState(false);
@@ -480,7 +479,7 @@ const ChatBox = forwardRef(({
                     ref={(ref) => (listRefs.current[index] = ref)}
                     answer={message.content}
                     participant={message.participant}
-                    onStop={onStopStreaming(message.id)}
+                    onStop={onStopStreaming(message)}
                     onCopy={onCopyToClipboard(message.id)}
                     onDelete={onDeleteAnswer(message.id)}
                     shouldDisableRegenerate={isLoading || isStreaming || Boolean(message.isLoading)}
@@ -495,7 +494,7 @@ const ChatBox = forwardRef(({
                     ref={(ref) => (listRefs.current[index] = ref)}
                     answer={message.content}
                     participant={message.participant}
-                    onStop={onStopStreaming(message.id)}
+                    onStop={onStopStreaming(message)}
                     onCopy={onCopyToClipboard(message.id)}
                     onDelete={onDeleteAnswer(message.id)}
                     shouldDisableRegenerate={isLoading || isStreaming || Boolean(message.isLoading)}

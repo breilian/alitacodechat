@@ -25,12 +25,10 @@ export const DataProvider = ({ children }) => {
   const vscodeRef = useRef(null);
   const [modelSettings, setModelSettings] = useState(null);
 
-  const [messageId, setMessageId] = useState(0);
   const [messagePromises, setMessagePromises] = useState({});
 
   const sendMessage = useCallback(({ type, data }) => {
-    const id = messageId + 1;
-    setMessageId(id);
+    const id = new Date().getTime();
     return new Promise((resolve, reject) => {
       setMessagePromises(prev => ({ ...prev, [id]: { resolve, reject } }));
       vscodeRef.current?.postMessage({
@@ -39,7 +37,7 @@ export const DataProvider = ({ children }) => {
         data
       });
     });
-  }, [messageId]);
+  }, []);
 
   const loadCoreData = useCallback(() => {
     if (!vscodeRef.current) return
@@ -81,6 +79,8 @@ export const DataProvider = ({ children }) => {
       const message = event.data;
       console.log("message from vs code: ", message);
       switch (message.type) {
+        case UiMessageTypes.stopApplicationTask:
+        case UiMessageTypes.stopDatasourceTask:
         case UiMessageTypes.getSelectedText:
           if (messagePromises[message.id]) {
             messagePromises[message.id].resolve(message.data);
@@ -89,6 +89,10 @@ export const DataProvider = ({ children }) => {
           break;
         case UiMessageTypes.error:
           console.error(message.message);
+          if (messagePromises[message.id]) {
+            messagePromises[message.id].resolve(message.message);
+            setMessagePromises(prev => ({ ...prev, [message.id]: null }));
+          }
           break;
         case UiMessageTypes.startLoading:
           setIsLoading(true);
