@@ -11,11 +11,12 @@ export function SocketProvider({ children }) {
 
   const createSocket = useCallback(() => {
     if (!socketConfig || !socketConfig.host) return;
-    const { host, path } = socketConfig
+    const { host, path, token } = socketConfig
 
     const socketIo = io(host, {
       path,
       reconnectionDelayMax: 2000,
+      extraHeaders: {'Authorization': `Bearer ${token}`}
     })
 
     socketIo.on('connect', () => {
