@@ -1,6 +1,7 @@
 import { Tooltip, tooltipClasses } from "@mui/material";
 import { typographyVariants } from "@/MainTheme";
 import { filterProps } from "@/common/utils";
+import { styled } from '@mui/material/styles';
 
 const StyledTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} classes={{ popper: className }} />

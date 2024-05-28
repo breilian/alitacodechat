@@ -1,5 +1,6 @@
 import { Menu, MenuItem } from '@mui/material';
 import { useCallback } from 'react';
+import { styled } from '@mui/material/styles';
 
 const StyledMenu = styled(Menu)({
   '& .MuiMenu-paper': {

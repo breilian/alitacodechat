@@ -17,6 +17,7 @@ import CopyIcon from '@/components/Icons/CopyIcon';
 import useToast from '@/components/useToast';
 import Markdown from "@/components/Markdown.jsx";
 import Button from '@/components/Button';
+import { styled } from '@mui/material/styles';
 
 export const SaveButton = styled(Button)(({ theme }) => ({
   backgroundColor: theme.palette.primary.main,

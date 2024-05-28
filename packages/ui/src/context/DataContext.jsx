@@ -26,6 +26,7 @@ export const DataProvider = ({ children }) => {
   const [modelSettings, setModelSettings] = useState(null);
 
   const [messagePromises, setMessagePromises] = useState({});
+  const [alternativeCallsToIde, setAlternativeCallsToIde] = useState([]);
 
   const sendMessage = useCallback(({ type, data }) => {
     const id = new Date().getTime();
@@ -65,10 +66,15 @@ export const DataProvider = ({ children }) => {
       console.log('acquireVsCodeApi', vscodeRef.current)
       if (!window.acquireVsCodeApi) {
         console.log('window.acquireVsCodeApi not found')
-        return;
+        console.log('alternative method will be using to replace window.acquireVsCodeApi for integration with other Ide types (JetBrains)')
+        vscodeRef.current = {
+          postMessage: ({id, type, data}) => {
+            setAlternativeCallsToIde(prev => [...prev, {id, type, data}])
+          }
+        }
+      } else {
+        vscodeRef.current = window.acquireVsCodeApi();
       }
-      const vscode = window.acquireVsCodeApi();
-      vscodeRef.current = vscode;
       loadCoreData()
     }
   }, [loadCoreData]);
@@ -134,6 +140,26 @@ export const DataProvider = ({ children }) => {
       window.removeEventListener('message', messageHandler);
     };
   }, [loadCoreData, messagePromises]);
+
+  // Alternative method to send/receive messages from Ide
+  useEffect(() => {
+    if (alternativeCallsToIde.length > 0) {
+      alternativeCallsToIde.forEach(call => {
+        if (import.meta.env.ALTERNATIVE_HOST) {
+          const ideGetQuery = new URL(import.meta.env.ALTERNATIVE_HOST);
+          ideGetQuery.search = new URLSearchParams(call).toString();
+
+          fetch(ideGetQuery)
+            .then(result => result.json())
+            .then(message => {
+              window.postMessage(message)
+            })
+        }
+      })
+
+      setAlternativeCallsToIde([])
+    }
+  }, [alternativeCallsToIde, messagePromises]);
 
   return (
     <DataContext.Provider
