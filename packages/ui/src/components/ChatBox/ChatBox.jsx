@@ -209,6 +209,23 @@ const ChatBox = forwardRef(({
           msg.isStreaming = false
         }
         break
+      case SocketMessageType.AgentLlmChunk:
+        t = msg.toolActions.find(i => i.id === message?.response_metadata?.tool_run_id)
+        if (t) {
+          if (t.content === undefined) {
+            t.content = '```json\n'
+          }
+          t.content += message.content
+        }
+        break
+      case SocketMessageType.AgentLlmEnd:
+        t = msg.toolActions.find(i => i.id === message?.response_metadata?.tool_run_id)
+        if (t) {
+          t.content += '\n```'
+          t.status = ToolActionStatus.complete
+        }
+        break
+      case SocketMessageType.AgentLlmStart:
       case SocketMessageType.AgentToolStart:
         if (msg.toolActions === undefined) {
           msg.toolActions = []
@@ -217,7 +234,8 @@ const ChatBox = forwardRef(({
           msg.toolActions.push({
             name: message?.response_metadata?.tool_name,
             id: message?.response_metadata?.tool_run_id,
-            status: ToolActionStatus.processing
+            status: ToolActionStatus.processing,
+            toolInputs: message?.response_metadata?.tool_inputs
           })
         }
         break

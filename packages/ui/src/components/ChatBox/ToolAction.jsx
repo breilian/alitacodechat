@@ -1,5 +1,5 @@
 
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Divider } from '@mui/material';
 import { AccordionShowMode, StyledAccordion, StyledAccordionSummary, StyledAccordionDetails } from '../BasicAccordion';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useTheme } from '@emotion/react';
@@ -123,7 +123,7 @@ export default function ToolAction({ showMode = AccordionShowMode.RightMode, def
       <StyledAccordionSummary
         expandIcon={<StyledExpandMoreIcon sx={{ width: '22px', height: '22px' }} />}
         aria-controls={'panel-content'}
-        id={'panel-header'}
+        // id={'panel-header'}
         showMode={showMode}
         sx={{
           '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
@@ -143,6 +143,16 @@ export default function ToolAction({ showMode = AccordionShowMode.RightMode, def
           gap: '12px'
         }}
       >
+        {action.toolInputs &&
+          <>
+            <Typography variant={"subtitle1"}>Tool inputs:</Typography>
+            <Markdown>
+              {'```json\n' + JSON.stringify(action.toolInputs, null, 2) + '\n```'}
+            </Markdown>
+            <Divider sx={{mb: 5}} variant={"fullWidth"}/>
+          </>
+        }
+
         <Markdown>
           {action.content}
         </Markdown>
