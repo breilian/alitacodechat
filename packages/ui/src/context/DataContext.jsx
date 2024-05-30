@@ -15,6 +15,25 @@ const filterByCodeTag = (list) => {
     ));
 }
 
+const getFilteredModels = (integration, capabilities) => {
+  return (integration?.settings?.models || [])
+    .filter(modelItem => {
+      return capabilities.some(capability => modelItem.capabilities[capability]);
+    })
+    .map(({ name }) => ({
+      model_name: name,
+      integration_uid: integration.uid,
+    }));
+}
+
+const getIntegrationOptions = (integrations) => integrations.reduce((accumulator, integration) => {
+  const filteredModels = getFilteredModels(integration, ['chat_completion', 'completion']);
+  if (filteredModels.length > 0) {
+    accumulator = [...accumulator, ...filteredModels];
+  }
+  return accumulator;
+}, []);
+
 export const DataProvider = ({ children }) => {
   const [socketConfig, setSocketConfig] = useState(null);
   const [chatHistory, setChatHistory] = useState([]);
@@ -22,6 +41,7 @@ export const DataProvider = ({ children }) => {
   const [prompts, setPrompts] = useState([]);
   const [datasources, setDatasources] = useState([]);
   const [applications, setApplications] = useState([]);
+  const [deployments, setDeployments] = useState([])
   const vscodeRef = useRef(null);
   const [modelSettings, setModelSettings] = useState(null);
 
@@ -59,6 +79,9 @@ export const DataProvider = ({ children }) => {
     vscodeRef.current?.postMessage({
       type: VsCodeMessageTypes.getApplications,
     });
+    vscodeRef.current?.postMessage({
+      type: VsCodeMessageTypes.getDeployments,
+    });
   }, []);
 
   useEffect(() => {
@@ -68,8 +91,8 @@ export const DataProvider = ({ children }) => {
         console.log('window.acquireVsCodeApi not found')
         console.log('alternative method will be using to replace window.acquireVsCodeApi for integration with other Ide types (JetBrains)')
         vscodeRef.current = {
-          postMessage: ({id, type, data}) => {
-            setAlternativeCallsToIde(prev => [...prev, {id, type, data}])
+          postMessage: ({ id, type, data }) => {
+            setAlternativeCallsToIde(prev => [...prev, { id, type, data }])
           }
         }
       } else {
@@ -114,6 +137,9 @@ export const DataProvider = ({ children }) => {
           break;
         case UiMessageTypes.getApplications:
           setApplications(filterByCodeTag(message.data));
+          break;
+        case UiMessageTypes.getDeployments:
+          setDeployments(getIntegrationOptions(message.data || []));
           break;
         case UiMessageTypes.settingsChanged:
           loadCoreData();
@@ -174,6 +200,7 @@ export const DataProvider = ({ children }) => {
         prompts,
         datasources,
         applications,
+        deployments,
         sendMessage,
         loadCoreData,
       }}

@@ -30,6 +30,31 @@ import ApplicationAnswer from './ApplicationAnswer';
 const USE_STREAM = true
 const MESSAGE_REFERENCE_ROLE = 'reference'
 
+
+const getDefaultModel = (model = {}, modelsList) => {
+  const { model_name = '', integration_uid = '' } = model;
+  const modelAndIntegrationExists = modelsList.find(item => item.integration_uid === integration_uid && item.model_name === model_name)
+  if (modelAndIntegrationExists) {
+    return {
+      model_name,
+      integration_uid,
+    }
+  } else {
+    const modelExists = modelsList.find(item => item.model_name === model_name)
+    if (modelExists) {
+      return {
+        model_name,
+        integration_uid: modelExists.integration_uid,
+      }
+    }
+    return {
+      model_name: modelsList[0]?.model_name || '',
+      integration_uid: modelsList[0]?.integration_uid || '',
+    }
+  }
+}
+
+
 const generatePayload = ({
   projectId, prompt_id, type, name, variables, currentVersionId, model_settings
 }) => ({
@@ -79,6 +104,7 @@ const ChatBox = forwardRef(({
     chatHistory = [],
     setChatHistory = () => { },
     loadCoreData,
+    deployments
   } = useContext(DataContext);
   const chatInput = useRef(null);
   const listRefs = useRef([]);
@@ -388,6 +414,18 @@ const ChatBox = forwardRef(({
       } else {
         if (modelSettings) {
           payloadData.model_settings = modelSettings
+          payloadData.model_settings.model = getDefaultModel(modelSettings.model, deployments)
+          if (!payloadData.model_settings.model.model_name) {
+            setToastMessage('Alita Code extension model settings are missing.');
+            setToastSeverity('error');
+            setShowToast(true);
+            return
+          } else if (!payloadData.model_settings.model.integration_uid) {
+            setToastMessage('Alita Code extension integration Uid is missing.');
+            setToastSeverity('error');
+            setShowToast(true);
+            return
+          }
         } else {
           setToastMessage('Alita Code extension model settings are missing.');
           setToastSeverity('error');
@@ -399,7 +437,7 @@ const ChatBox = forwardRef(({
       emit(payload)
     }
   },
-    [scrollToMessageListEnd, setChatHistory, dataContext, chatHistory, emit])
+    [scrollToMessageListEnd, dataContext, setChatHistory, emit, chatHistory, deployments])
 
   const onSend = useCallback(
     (data) => {
