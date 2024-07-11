@@ -172,6 +172,9 @@ export const DataProvider = ({ children }) => {
     if (alternativeCallsToIde.length > 0) {
       alternativeCallsToIde.forEach(call => {
         if (import.meta.env.ALTERNATIVE_HOST) {
+          // extract code string to send it as string parameter (not object)
+          call.data?.code && (call.data = call.data.code)
+          
           const ideGetQuery = new URL(import.meta.env.ALTERNATIVE_HOST);
           ideGetQuery.search = new URLSearchParams(call).toString();
 
