@@ -218,7 +218,8 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
     if (question.trim() && !disabledSend) {
       const sendData = { user_input: question };
       if (chatWith && selectedOption && participantDetail) {
-        const latestVersionId = participantDetail.versions.find(v => v.name === 'latest')?.id
+        const lastVersionName = participantDetail.version_details.name;
+        const latestVersionId = participantDetail.versions.find(v => v.name === lastVersionName)?.id
         if (latestVersionId) {
           sendData.currentVersionId = latestVersionId
         }

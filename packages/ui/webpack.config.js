@@ -10,6 +10,7 @@ const config = {
   output: {
     path: path.resolve("dist-webpack")
   },
+  devtool : "inline-source-map",
   mode: "production",
   resolve: {
     extensions: [".js", ".jsx"], // This allows webpack to resolve both .js and .jsx modules for import statements
@@ -50,7 +51,7 @@ const config = {
     new webpack.DefinePlugin({
       // import.meta.env is required to support built-in Vite configurations
       "import.meta.env": {},
-      "import.meta.env.ALTERNATIVE_HOST": JSON.stringify("http://calltoide.com"),
+      "import.meta.env.ALTERNATIVE_HOST": JSON.stringify("http://localhost:3333"),
     })
   ]
 };
