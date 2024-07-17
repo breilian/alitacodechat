@@ -30,6 +30,7 @@ export const useManualSocket = (event, responseHandler) => {
 
   const emit = useCallback((payload) => {
     reconnect()
+    console.log("---> : " + new Date() + " - 1 - emit " + payload);
     socket?.emit(event, payload);
   }, [socket, event, reconnect]);
 

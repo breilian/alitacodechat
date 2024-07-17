@@ -156,9 +156,9 @@ const ChatBox = forwardRef(({
   }, [chatHistory]);
 
   const getMessage = useCallback((messageId) => {
-    const msgIdx = chatHistoryRef.current?.findIndex(i => i.id === messageId) || -1;
+    const msgIdx = chatHistoryRef.current?.findIndex(i => i.id === messageId || i.id === 'TEMP') || -1;
     let msg
-    if (msgIdx < 0) {
+    if (msgIdx < 0 || chatHistoryRef.current[msgIdx].id === 'TEMP') {
       msg = {
         id: messageId,
         role: ROLES.Assistant,
@@ -212,6 +212,11 @@ const ChatBox = forwardRef(({
     };
     let t
 
+    console.log(`stream_id ${stream_id}`);
+    console.log(`message_id ${message_id}`);
+    console.log(`message_type ${message_type}`);
+    console.log("---> : " + new Date() + ` - 2 ||||  [${msgIndex}] handle. ` + socketMessageType);
+    console.log("---------------------")
     switch (socketMessageType) {
       case SocketMessageType.StartTask:
         msg.isLoading = true
@@ -295,6 +300,8 @@ const ChatBox = forwardRef(({
         console.warn('unknown message type', socketMessageType)
         return
     }
+
+    console.log("---> : " + new Date() + " - 3 - ######################### before history " + socketMessageType);
     msgIndex > -1 && setChatHistory(prevState => {
       prevState[msgIndex] = msg
       return [...prevState]
@@ -320,6 +327,7 @@ const ChatBox = forwardRef(({
         chat_history: chatHistory,
       }
     });
+    console.log("---> : " + new Date() + " - 4 - VsCodeMessageTypes.getChatResponse")
     setChatHistory((prevMessages) => {
       return [...prevMessages, {
         ...data,
@@ -411,6 +419,21 @@ const ChatBox = forwardRef(({
         payloadData.prompt_id = data.prompt_id
         payloadData.currentVersionId = data.currentVersionId
         payloadData.variables = data.variables
+
+        // FIXME set temp message
+        const tempMsg = {
+          id: 'TEMP',
+          role: ROLES.Assistant,
+          content: '',
+          participant: participantRef.current,
+          created_at: new Date().getTime(),
+          isLoading: true,
+          isStreaming: true,
+          references: []
+        }
+
+        setChatHistory(prevState => [...prevState, tempMsg])
+        // FIXME end
       } else {
         if (modelSettings) {
           payloadData.model_settings = modelSettings

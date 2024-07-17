@@ -33,4 +33,6 @@ export const UiMessageTypes = {
   settingsChanged: 'ui.settingsChanged',
   stopDatasourceTask: 'ui.stopDatasourceTask',
   stopApplicationTask: 'ui.stopApplicationTask',
+  getPromptVersionDetail: 'ui.getPromptVersionDetail',
+  getApplicationVersionDetail: 'ui.getApplicationVersionDetail',
 }

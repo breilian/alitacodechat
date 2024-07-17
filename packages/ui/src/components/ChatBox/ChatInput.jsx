@@ -25,7 +25,6 @@ import OptionPopper from './OptionPopper';
 import { VariableDialog } from './VariableDialog';
 import ApplicationsIcon from '../Icons/ApplicationsIcon';
 
-
 const MAX_ROWS = 15;
 const MIN_ROWS = 3;
 const MIN_HEIGHT = 70;
@@ -47,6 +46,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
     prompts,
     applications,
     postMessageToVsCode,
+    callProvider,
   } = useContext(DataContext);
   const theme = useTheme();
   const [question, setQuestion] = useState('');
@@ -119,7 +119,17 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
     setVariables(prev => prev.map(item =>
       item.name === label ? { ...item, value: newValue } : item))
   }, [])
-  const onCancel = useCallback(() => {
+  const onChangeVersion = useCallback((event) => {
+    callProvider({
+      type: chatWith === ChatTypes.prompt ? UiMessageTypes.getPromptVersionDetail : UiMessageTypes.getApplicationVersionDetail, 
+      parameters: {id: participantDetail.id, versionName: event.target.value}
+    });
+  }, [chatWith, participantDetail, callProvider])
+  const onCancel = useCallback((event, reason) => {
+    if (reason && reason === "backdropClick") {
+      return;
+    }
+
     setOpen(false);
   }, [])
   const openVariableDialog = useCallback(() => {
@@ -135,7 +145,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
       switch (message.type) {
         case UiMessageTypes.getPromptDetail:
           setParticipantDetail(detail);
-          if (detail?.version_details.variables?.length > 0) {
+          if (detail?.versions.length > 1 || detail?.version_details.variables?.length > 0) {
             setVariables(detail?.version_details.variables)
             setOpen(true)
           }
@@ -145,11 +155,17 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
           break;
         case UiMessageTypes.getApplicationDetail:
           setParticipantDetail(detail);
-          if (detail?.version_details.variables?.length > 0) {
+          if (detail?.versions.length > 1 || detail?.version_details.variables?.length > 0) {
             const filterVariables = detail?.version_details?.variables?.filter(variable => !ApplicationSystemVariables.includes(variable.name)) || []
             setVariables(filterVariables)
-            setOpen(filterVariables.length > 0)
+            setOpen(detail?.versions.length > 1 || filterVariables.length > 0)
           }
+          break;
+        case UiMessageTypes.getPromptVersionDetail:
+          setParticipantDetail(detail);
+          break;
+        case UiMessageTypes.getApplicationVersionDetail:
+          setParticipantDetail(detail);
           break;
       }
     }
@@ -218,8 +234,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
     if (question.trim() && !disabledSend) {
       const sendData = { user_input: question };
       if (chatWith && selectedOption && participantDetail) {
-        const lastVersionName = participantDetail.version_details.name;
-        const latestVersionId = participantDetail.versions.find(v => v.name === lastVersionName)?.id
+        const latestVersionId = participantDetail.version_details.id
         if (latestVersionId) {
           sendData.currentVersionId = latestVersionId
         }
@@ -296,13 +311,14 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
         handleSelect={handleSelectOption}
       />
 
-      <VariableDialog
-        variables={variables}
+      {participantDetail && <VariableDialog
+        detail={participantDetail}
         open={open}
         setOpen={setOpen}
         onChangeVariable={onChangeVariable}
+        onChangeVersion={onChangeVersion}
         onCancel={onCancel}
-      />
+      />}
 
       <ChatInputContainer sx={sx} >
         <Box sx={{ flex: 1, marginRight: 1 }}>

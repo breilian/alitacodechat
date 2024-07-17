@@ -1,5 +1,5 @@
 import { filterProps } from '@/common/utils';
-import { Box } from '@mui/material';
+import {Box, Select} from '@mui/material';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
@@ -209,3 +209,8 @@ export const Message = styled(Box)(() => `
   overflow-wrap: break-word;
   word-break: break-word;
 `);
+
+export const StyledSelect = styled(Select)(() => ({
+  padding: '8px 0 0 0',
+  '.MuiOutlinedInput-notchedOutline': { border: 0 }
+}));
