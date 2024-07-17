@@ -4,26 +4,33 @@ import {
   StyledDialogActions,
 } from '@/components/StyledDialog';
 import VariableList from '@/pages/Prompts/Components/Form/VariableList';
-import { DialogContent, DialogTitle, Typography } from '@mui/material';
+import {
+  Box,
+  DialogContent,
+  DialogTitle,
+  Typography
+} from '@mui/material';
+import React from "react";
+import VersionSelect from "@/pages/Prompts/Components/Form/VersionSelect.jsx";
 
 export function VariableDialog({
   open,
-  variables,
+  detail,
   onChangeVariable,
+  onChangeVersion,
   onCancel,
 }) {
 
   return (
     <StyledDialog
-      disableBackdropClick={true}
       open={open}
       onClose={onCancel}
       aria-labelledby="alert-dialog-title"
       aria-describedby="alert-dialog-description"
     >
       <DialogTitle id="alert-dialog-title">
-        <Typography variant='headingSmall' >
-          Variables
+        <Typography variant='headingSmall'>
+          {detail.name}
         </Typography>
       </DialogTitle>
       <DialogContent sx={{
@@ -31,14 +38,34 @@ export function VariableDialog({
         maxHeight: '400px',
         overflow: 'auto',
       }}>
-        <VariableList
-          variables={variables}
-          onChangeVariable={onChangeVariable}
-          showexpandicon='true'
-          multiline
-          collapseContent
-        />
+        <Box sx={{ display: 'flex'}}>
+          <VersionSelect
+            currentVersionName={detail.version_details.name}
+            versions={detail.versions}
+            onSelectVersion={onChangeVersion}
+          />
+        </Box>
       </DialogContent>
+      {detail.version_details.variables?.length > 0 &&
+        <>
+          <DialogTitle id="alert-dialog-title">
+            <Typography variant='headingSmall'>Variables</Typography>
+          </DialogTitle>
+          <DialogContent sx={{
+            width: '100%',
+            maxHeight: '400px',
+            overflow: 'auto',
+          }}>
+            <VariableList
+              variables={detail.version_details.variables}
+              onChangeVariable={onChangeVariable}
+              showexpandicon='true'
+              multiline
+              collapseContent
+            />
+          </DialogContent>
+        </>
+      }
       <StyledDialogActions>
         <StyledConfirmButton danger onClick={onCancel} disableRipple>OK</StyledConfirmButton>
       </StyledDialogActions>
