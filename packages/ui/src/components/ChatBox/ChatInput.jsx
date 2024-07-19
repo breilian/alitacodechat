@@ -241,6 +241,9 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
           sendData.tools = participantDetail.version_details?.tools
           sendData.variables = variables
         }
+      } else if (chatWith && (!selectedOption || !participantDetail)) {
+        //chatWith defined because some special sign was entered but option wasn't selected (selection was canceled)
+        onDeleteChatWith();
       }
       onSend(sendData);
       if (clearInputAfterSubmit) {
@@ -251,7 +254,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
         setShowExpandIcon(false);
       }
     }
-  }, [question, disabledSend, chatWith, selectedOption, participantDetail, onSend, clearInputAfterSubmit, variables]);
+  }, [question, disabledSend, chatWith, selectedOption, participantDetail, onSend, clearInputAfterSubmit, variables, onDeleteChatWith]);
 
   const { onKeyDown, onCompositionStart, onCompositionEnd } = useCtrlEnterKeyEventsHandler({
     onCtrlEnterDown,
