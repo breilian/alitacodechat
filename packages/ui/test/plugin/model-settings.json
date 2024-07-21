@@ -1,0 +1,10 @@
+{
+  "model": {
+    "model_name": "gpt-35-turbo"
+  },
+  "temperature": 0.8,
+  "max_tokens": 4096,
+  "top_p": 0.8,
+  "top_k": 40,
+  "stream": true
+}
