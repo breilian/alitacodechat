@@ -1,0 +1,21 @@
+name: Chat Pipeline
+on: [push]
+jobs:
+  start_plugin_testing_server_and_ui:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.20.2
+          cache: npm
+      - run: npm i
+      - run: cd packages/ui/test/plugin
+      - run: ls
+      - run: npm i
+      - run: npm start
+      - run: cd ..
+      - run: npm i
+      - run: npx webpack serve --mode development --env plugin=http://localhost:3333 &
