@@ -47,6 +47,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
     prompts,
     applications,
     postMessageToVsCode,
+    callProvider,
   } = useContext(DataContext);
   const theme = useTheme();
   const [question, setQuestion] = useState('');
@@ -80,7 +81,6 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
   const [filteredOptions, setFilteredOptions] = useState([]);
   const handleSelectOption = useCallback((option) => () => {
     setSelectedOption(option);
-    setVariables([]);
     setParticipant({
       ...option,
       type: chatWith,
@@ -113,18 +113,43 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
     }
   }, [postMessageToVsCode, selectedOption, setParticipant]);
 
-  const [variables, setVariables] = useState([]);
   const [open, setOpen] = useState(false);
+  const [configurable, setConfigurable] = useState(false);
   const onChangeVariable = useCallback((label, newValue) => {
-    setVariables(prev => prev.map(item =>
-      item.name === label ? { ...item, value: newValue } : item))
+    setParticipantDetail(prev => {
+      prev.version_details.variables.find(item => item.name === label).value = newValue;
+
+      return prev;
+    })
   }, [])
-  const onCancel = useCallback(() => {
+  const onChangeVersion = useCallback((versionId) => {
+    callProvider({
+      type: chatWith === ChatTypes.prompt ? UiMessageTypes.getPromptVersionDetail : UiMessageTypes.getApplicationVersionDetail, 
+      parameters: {
+        id: participantDetail.id, 
+        versionName: participantDetail.versions.find(item => item.id === versionId).name
+      }
+    });
+  }, [chatWith, participantDetail, callProvider])
+  const onCancel = useCallback((event, reason) => {
+    if (reason && reason === "backdropClick") {
+      return;
+    }
+
     setOpen(false);
   }, [])
   const openVariableDialog = useCallback(() => {
     setOpen(true);
   }, [])
+
+  useEffect(() => {
+    if (!participantDetail?.version_details.datasource_id && (participantDetail?.versions.length > 1 || participantDetail?.version_details.variables.length > 0)) {
+      setOpen(true);
+      setConfigurable(true);
+    } else {
+      setConfigurable(false);
+    }
+  }, [participantDetail])
 
   // Message Receiving from Extension
   useEffect(() => {
@@ -135,21 +160,22 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
       switch (message.type) {
         case UiMessageTypes.getPromptDetail:
           setParticipantDetail(detail);
-          if (detail?.version_details.variables?.length > 0) {
-            setVariables(detail?.version_details.variables)
-            setOpen(true)
-          }
           break;
         case UiMessageTypes.getDatasourceDetail:
           setParticipantDetail(detail);
           break;
         case UiMessageTypes.getApplicationDetail:
-          setParticipantDetail(detail);
-          if (detail?.version_details.variables?.length > 0) {
-            const filterVariables = detail?.version_details?.variables?.filter(variable => !ApplicationSystemVariables.includes(variable.name)) || []
-            setVariables(filterVariables)
-            setOpen(filterVariables.length > 0)
+          if (detail) {
+            detail.version_details.variables =
+              detail.version_details.variables.filter(item => !ApplicationSystemVariables.includes(item.name))
           }
+          setParticipantDetail(detail);
+          break;
+        case UiMessageTypes.getPromptVersionDetail:
+          setParticipantDetail(detail);
+          break;
+        case UiMessageTypes.getApplicationVersionDetail:
+          setParticipantDetail(detail);
           break;
       }
     }
@@ -218,13 +244,13 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
     if (question.trim() && !disabledSend) {
       const sendData = { user_input: question };
       if (chatWith && selectedOption && participantDetail) {
-        const latestVersionId = participantDetail.versions.find(v => v.name === 'latest')?.id
+        const latestVersionId = participantDetail.version_details.id
         if (latestVersionId) {
           sendData.currentVersionId = latestVersionId
         }
         if (chatWith === ChatTypes.prompt) {
           sendData.prompt_id = selectedOption.id
-          sendData.variables = variables
+          sendData.variables = participantDetail.version_details.variables
         } else if (chatWith === ChatTypes.datasource) {
           sendData.datasource_id = selectedOption.id
           const chatSettings = participantDetail.version_details?.datasource_settings?.chat
@@ -239,8 +265,11 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
           sendData.instructions = participantDetail.version_details?.instructions
           sendData.llm_settings = participantDetail.version_details?.llm_settings
           sendData.tools = participantDetail.version_details?.tools
-          sendData.variables = variables
+          sendData.variables = participantDetail.version_details.variables
         }
+      } else if (chatWith && (!selectedOption || !participantDetail)) {
+        //chatWith defined because some special sign was entered but option wasn't selected (selection was canceled)
+        onDeleteChatWith();
       }
       onSend(sendData);
       if (clearInputAfterSubmit) {
@@ -251,7 +280,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
         setShowExpandIcon(false);
       }
     }
-  }, [question, disabledSend, chatWith, selectedOption, participantDetail, onSend, clearInputAfterSubmit, variables]);
+  }, [question, disabledSend, chatWith, selectedOption, participantDetail, onSend, clearInputAfterSubmit, onDeleteChatWith]);
 
   const { onKeyDown, onCompositionStart, onCompositionEnd } = useCtrlEnterKeyEventsHandler({
     onCtrlEnterDown,
@@ -273,7 +302,7 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
             {chatWith === ChatTypes.datasource && <DatabaseIcon fontSize="1rem" />}
             {chatWith === ChatTypes.application && <ApplicationsIcon fontSize="1rem" />}
             <Typography variant='labelSmall'>{selectedOption?.name}</Typography>
-            {variables.length > 0 &&
+            {configurable &&
               <StyledTooltip title={'Settings'} placement="top">
                 <ActionButton onClick={openVariableDialog}>
                   <SettingIcon sx={{ fontSize: '1.13rem' }} color="icon" />
@@ -295,13 +324,14 @@ const ChatInput = forwardRef(function ChatInput(props, ref) {
         handleSelect={handleSelectOption}
       />
 
-      <VariableDialog
-        variables={variables}
+      {participantDetail && <VariableDialog
+        detail={participantDetail}
         open={open}
         setOpen={setOpen}
         onChangeVariable={onChangeVariable}
+        onChangeVersion={onChangeVersion}
         onCancel={onCancel}
-      />
+      />}
 
       <ChatInputContainer sx={sx} >
         <Box sx={{ flex: 1, marginRight: 1 }}>

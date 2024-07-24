@@ -172,6 +172,9 @@ export const DataProvider = ({ children }) => {
     if (alternativeCallsToIde.length > 0) {
       alternativeCallsToIde.forEach(call => {
         if (import.meta.env.ALTERNATIVE_HOST) {
+          // extract code string to send it as string parameter (not object)
+          call.data?.code && (call.data = call.data.code)
+          
           const ideGetQuery = new URL(import.meta.env.ALTERNATIVE_HOST);
           ideGetQuery.search = new URLSearchParams(call).toString();
 
@@ -185,7 +188,33 @@ export const DataProvider = ({ children }) => {
 
       setAlternativeCallsToIde([])
     }
-  }, [alternativeCallsToIde, messagePromises]);
+  }, [alternativeCallsToIde]);
+
+  const callProvider = useCallback(({ type, parameters }) => {
+    if (!socketConfig || !socketConfig.host) return;
+    const providerApi = new URL("api/v1/", new URL(socketConfig.host.replace("ws", "http")));
+    let queryPath;
+
+    switch (type) {
+      case UiMessageTypes.getPromptVersionDetail:
+        queryPath = `prompt_lib/prompt/prompt_lib/${socketConfig.projectId}/${parameters.id}/${parameters.versionName}`;
+        break;
+      case UiMessageTypes.getApplicationVersionDetail:
+        queryPath = `applications/application/prompt_lib/${socketConfig.projectId}/${parameters.id}/${parameters.versionName}`;
+        break;
+    }
+
+    queryPath && fetch(new URL(queryPath, providerApi), {
+      headers: {
+        'Authorization': `Bearer ${socketConfig.token}`,
+        'Alita-agent': 'React Chat',
+        'Content-Type': '*/*'
+      }})
+      .then(result => result.json())
+      .then(data => {
+        window.postMessage({type, data})
+      })
+  }, [socketConfig]);
 
   return (
     <DataContext.Provider
@@ -203,6 +232,7 @@ export const DataProvider = ({ children }) => {
         deployments,
         sendMessage,
         loadCoreData,
+        callProvider,
       }}
     >
       {children}

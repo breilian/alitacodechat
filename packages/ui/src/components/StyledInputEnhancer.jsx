@@ -108,6 +108,12 @@ export const StyledIconButton = styled(IconButton)(() => ({
   right: '8px'
 }));
 
+export const VersionSelectContainer = styled('div')(() => ({
+  display: 'inline-block',
+  marginRight: '2rem',
+  paddingTop: '0.16rem',
+}));
+
 
 export default function StyledInputEnhancer(props) {
   const {
