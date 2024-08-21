@@ -54,7 +54,7 @@ app.get('/', async (req, res) => {
             case 'extension.getSocketConfig':
                 data = {
                     projectId,
-                    host,
+                    host: host.replace('http', 'ws'),
                     token,
                     path: '/socket.io'
                 }

@@ -5,16 +5,16 @@ import SocketContext from "./SocketContext";
 import DataContext from "./DataContext";
 
 export function SocketProvider({ children }) {
-  const { socketConfig } = useContext(DataContext);
+  const { providerConfig } = useContext(DataContext);
   const [socket, setSocket] = useState(null);
   const [connected, setConnected] = useState(false);
 
   const createSocket = useCallback(() => {
-    if (!socketConfig || !socketConfig.host) return;
-    const { host, path, token } = socketConfig
+    if (!providerConfig || !providerConfig.socketHost) return;
+    const { socketHost, socketPath, token } = providerConfig
 
-    const socketIo = io(host, {
-      path,
+    const socketIo = io(socketHost, {
+      path: socketPath,
       reconnectionDelayMax: 2000,
       extraHeaders: {'Authorization': `Bearer ${token}`}
     })
@@ -33,18 +33,18 @@ export function SocketProvider({ children }) {
     })
 
     return socketIo
-  }, [socketConfig]);
+  }, [providerConfig]);
 
   useEffect(() => {
-    console.log('socketConfig', socketConfig)
-    if (!socketConfig || socket) return;
+    console.log('create socket with providerConfig', providerConfig)
+    if (!providerConfig || socket) return;
     const socketIo = createSocket()
     setSocket(socketIo)
 
     return () => {
       socketIo && socketIo.disconnect();
     };
-  }, [createSocket, socket, socketConfig]);
+  }, [createSocket, socket, providerConfig]);
 
   return (
     <SocketContext.Provider

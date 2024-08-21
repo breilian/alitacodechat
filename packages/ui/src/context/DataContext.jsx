@@ -35,6 +35,7 @@ const getIntegrationOptions = (integrations) => integrations.reduce((accumulator
 }, []);
 
 export const DataProvider = ({ children }) => {
+  const [providerConfig, setProviderConfig] = useState(null);
   const [socketConfig, setSocketConfig] = useState(null);
   const [chatHistory, setChatHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -151,8 +152,30 @@ export const DataProvider = ({ children }) => {
             role: ROLES.Assistant,
           }]);
           break;
+        case UiMessageTypes.getProviderConfig:
+          setProviderConfig(message.data);
+          break;
         case UiMessageTypes.getSocketConfig:
           setSocketConfig(message.data);
+          // Resolve provider settings from received socket config
+          if (message.data?.host) {
+            //remove trailing slashes
+            const socketHostSrc = message.data.host.replace(/\/*$/, "");
+            //remove leading, trailing and duplicated slashes (normalize path)
+            const socketPathSrc = "/" + message.data.path.split('/').filter(segment => segment.length > 0).join('/');
+            //full url from input data
+            const urlSrcObj = new URL(socketHostSrc.concat(socketPathSrc));
+            const socketHost = urlSrcObj.origin;
+            const socketPath = urlSrcObj.pathname;
+            urlSrcObj.protocol = urlSrcObj.protocol.replace("ws", "http");
+            urlSrcObj.pathname = urlSrcObj.pathname.replace("/socket.io", "");
+            const url = urlSrcObj.toString();
+            const apiUrl = url.concat("/api/v1");
+            const projectId = message.data.projectId;
+            const token = message.data.token;
+            
+            setProviderConfig({url, apiUrl, socketHost, socketPath, projectId, token});
+          }
           break;
         case UiMessageTypes.getModelSettings:
           setModelSettings(message.data);
@@ -191,22 +214,21 @@ export const DataProvider = ({ children }) => {
   }, [alternativeCallsToIde]);
 
   const callProvider = useCallback(({ type, parameters }) => {
-    if (!socketConfig || !socketConfig.host) return;
-    const providerApi = new URL("api/v1/", new URL(socketConfig.host.replace("ws", "http")));
+    if (!providerConfig?.url) return;
     let queryPath;
 
     switch (type) {
       case UiMessageTypes.getPromptVersionDetail:
-        queryPath = `prompt_lib/prompt/prompt_lib/${socketConfig.projectId}/${parameters.id}/${parameters.versionName}`;
+        queryPath = `/prompt_lib/prompt/prompt_lib/${providerConfig.projectId}/${parameters.id}/${parameters.versionName}`;
         break;
       case UiMessageTypes.getApplicationVersionDetail:
-        queryPath = `applications/application/prompt_lib/${socketConfig.projectId}/${parameters.id}/${parameters.versionName}`;
+        queryPath = `/applications/application/prompt_lib/${providerConfig.projectId}/${parameters.id}/${parameters.versionName}`;
         break;
     }
 
-    queryPath && fetch(new URL(queryPath, providerApi), {
+    queryPath && fetch(providerConfig.apiUrl.concat(queryPath), {
       headers: {
-        'Authorization': `Bearer ${socketConfig.token}`,
+        'Authorization': `Bearer ${providerConfig.token}`,
         'Alita-agent': 'React Chat',
         'Content-Type': '*/*'
       }})
@@ -214,7 +236,7 @@ export const DataProvider = ({ children }) => {
       .then(data => {
         window.postMessage({type, data})
       })
-  }, [socketConfig]);
+  }, [providerConfig]);
 
   return (
     <DataContext.Provider
@@ -233,6 +255,7 @@ export const DataProvider = ({ children }) => {
         sendMessage,
         loadCoreData,
         callProvider,
+        providerConfig,
       }}
     >
       {children}
