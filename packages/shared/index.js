@@ -25,6 +25,7 @@ export const UiMessageTypes = {
   getDatasourceDetail: 'ui.getDatasourceDetail',
   getDatasources: 'ui.getDatasources',
   getChatResponse: 'ui.getChatResponse',
+  getProviderConfig:  'ui.getProviderConfig',
   getSocketConfig: 'ui.getSocketConfig',
   getModelSettings: 'ui.getModelSettings',
   getApplicationDetail: 'ui.getApplicationDetail',

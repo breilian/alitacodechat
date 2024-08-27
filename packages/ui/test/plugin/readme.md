@@ -36,6 +36,7 @@ Parameter --env serves to pass host of plugin server. Default value is http://ca
 By default, react chat UI is available to interact by http://localhost:8080/
 Use option --port to specify another port (_npx webpack serve --mode development --port 1234 ..._)
 
-Now you need to run javascript debug on webpack port (default is 8080) from IDE.
-VS Code: https://code.visualstudio.com/docs/nodejs/reactjs-tutorial#_debugging-react
+#### Debug
+You need run javascript debug configuration from your IDE on webpack port (default is 8080).  
+VS Code: https://code.visualstudio.com/docs/nodejs/reactjs-tutorial#_debugging-react  
 WebStorm: https://www.jetbrains.com/help/webstorm/react.html#react_debug_via_js_debug_rc
