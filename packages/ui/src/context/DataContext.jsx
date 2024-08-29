@@ -2,6 +2,7 @@
 import { ROLES } from '@/common/constants.js';
 import { createContext, useCallback, useEffect, useRef, useState } from 'react';
 import { UiMessageTypes, VsCodeMessageTypes } from 'shared';
+import {removeTrailingSlashes} from "@/common/utils.js";
 
 const DataContext = createContext(undefined);
 
@@ -160,7 +161,7 @@ export const DataProvider = ({ children }) => {
           // Resolve provider settings from received socket config
           if (message.data?.host) {
             //remove trailing slashes
-            const socketHostSrc = message.data.host.replace(/\/*$/, "");
+            const socketHostSrc = removeTrailingSlashes(message.data.host);
             //remove leading, trailing and duplicated slashes (normalize path)
             const socketPathSrc = "/" + message.data.path.split('/').filter(segment => segment.length > 0).join('/');
             //full url from input data
@@ -169,7 +170,7 @@ export const DataProvider = ({ children }) => {
             const socketPath = urlSrcObj.pathname;
             urlSrcObj.protocol = urlSrcObj.protocol.replace("ws", "http");
             urlSrcObj.pathname = urlSrcObj.pathname.replace("/socket.io", "");
-            const url = urlSrcObj.toString();
+            const url = removeTrailingSlashes(urlSrcObj.toString());
             const apiUrl = url.concat("/api/v1");
             const projectId = message.data.projectId;
             const token = message.data.token;
