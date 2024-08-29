@@ -57,3 +57,5 @@ export const buildErrorMessage = (err) => {
     return typeof err === 'string' ? err : err?.data;
   }
 };
+
+export const removeTrailingSlashes = str => str.replace(/\/*$/, "");
