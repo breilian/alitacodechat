@@ -302,7 +302,7 @@ const ChatBox = forwardRef(({
   }, [getMessage, handleError, scrollToMessageListEnd, setChatHistory])
 
   const dataContext = useContext(DataContext);
-  const { emit } = useSocket(
+  const { emit, resetSocket } = useSocket(
     chatWith === ChatTypes.datasource ?
       sioEvents.datasource_predict :
       chatWith === ChatTypes.application ?
@@ -502,7 +502,10 @@ const ChatBox = forwardRef(({
             <ActionButtons
               isStreaming={isStreaming}
               onStopAll={onStopAll}
-              onRefresh={loadCoreData}
+              onRefresh={() => {
+                resetSocket();
+                loadCoreData();
+              }}
             />
             <ActionButton
               aria-label="clear the chat"

@@ -2,7 +2,7 @@ import {useEffect, useCallback, useContext} from 'react';
 import SocketContext from '@/context/SocketContext';
 
 export const useManualSocket = (event, responseHandler) => {
-  const {socket, connected} = useContext(SocketContext);
+  const {socket, connected, resetSocket} = useContext(SocketContext);
   const reconnect = useCallback(() => {
     // eslint-disable-next-line no-console
     socket && socket.disconnected && console.log('reconnecting')
@@ -38,12 +38,13 @@ export const useManualSocket = (event, responseHandler) => {
     unsubscribe,
     emit,
     socket,
-    connected
+    connected,
+    resetSocket,
   }
 };
 
 const useSocket = (event, responseHandler) => {
-  const {subscribe, unsubscribe, emit, connected} = useManualSocket(event, responseHandler)
+  const {subscribe, unsubscribe, emit, connected, resetSocket} = useManualSocket(event, responseHandler)
 
   useEffect(() => {
     subscribe()
@@ -54,7 +55,8 @@ const useSocket = (event, responseHandler) => {
 
   return {
     emit,
-    connected
+    connected,
+    resetSocket,
   }
 };
 
