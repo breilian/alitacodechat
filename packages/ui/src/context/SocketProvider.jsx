@@ -8,6 +8,7 @@ export function SocketProvider({ children }) {
   const { providerConfig } = useContext(DataContext);
   const [socket, setSocket] = useState(null);
   const [connected, setConnected] = useState(false);
+  const [error, setError] = useState(null);
 
   const createSocket = useCallback(() => {
     if (!providerConfig || !providerConfig.socketHost) return;
@@ -22,10 +23,12 @@ export function SocketProvider({ children }) {
     socketIo.on('connect', () => {
       console.log('sio connected', socketIo)
       setConnected(socketIo.connected)
+      setError(null)
     })
     socketIo?.on("connect_error", (err) => {
       console.log(`Connection error due to ${err}`);
       setConnected(socketIo.connected)
+      setError(`Socket connection error: ${err.message}`)
     });
     socketIo?.on('disconnect', () => {
       console.log('needs reconnecting', socketIo)
@@ -57,6 +60,7 @@ export function SocketProvider({ children }) {
         socket,
         createSocket,
         connected,
+        error,
       }}
     >
       {children}
