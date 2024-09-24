@@ -3,15 +3,13 @@
 import { ROLES, sioEvents, SocketMessageType, ChatTypes, ToolActionStatus } from '@/common/constants';
 import { VsCodeMessageTypes } from 'shared';
 import { buildErrorMessage } from '@/common/utils';
-import { forwardRef, useCallback, useContext, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import { forwardRef, useCallback, useContext, useEffect, useImperativeHandle, useRef, useState } from "react";
 import AlertDialog from '../AlertDialog';
-import Toast from '../Toast';
 import AIAnswer from './AIAnswer';
 import ChatInput from './ChatInput';
 import {
   ActionButton,
   ActionContainer,
-  ChatBodyContainer,
   ChatBoxContainer,
   MessageList
 } from './StyledComponents';
@@ -24,8 +22,8 @@ import ActionButtons from './ActionButtons';
 import { useStopStreaming } from './hooks';
 import ClearIcon from '../Icons/ClearIcon';
 import DataContext from '@/context/DataContext';
-import SocketContext from '@/context/SocketContext';
 import ApplicationAnswer from './ApplicationAnswer';
+import useToast from "@/components/useToast.jsx";
 
 const USE_STREAM = true
 const MESSAGE_REFERENCE_ROLE = 'reference'
@@ -99,6 +97,11 @@ const ChatBox = forwardRef(({
   messageListSX,
 }, boxRef) => {
   const {
+    ToastComponent,
+    toastError,
+    toastSuccess
+  } = useToast();
+  const {
     isLoading,
     postMessageToVsCode,
     chatHistory = [],
@@ -112,8 +115,6 @@ const ChatBox = forwardRef(({
   const name = 'User';
 
   const [isRegenerating, setIsRegenerating] = useState(false);
-  const [answerIdToRegenerate, setAnswerIdToRegenerate] = useState('');
-  const [isRunning, setIsRunning] = useState(false);
   const chatHistoryRef = useRef(chatHistory);
   const [chatWith, setChatWith] = useState('')
   const [participant, setParticipant] = useState(null)
@@ -175,16 +176,12 @@ const ChatBox = forwardRef(({
 
   const handleError = useCallback(
     (errorObj) => {
-      setIsRunning(false);
-      setToastMessage(buildErrorMessage(errorObj));
-      setToastSeverity('error');
-      setShowToast(true);
+      toastError(buildErrorMessage(errorObj));
       if (isRegenerating) {
-        setAnswerIdToRegenerate('');
         setIsRegenerating(false);
       }
     },
-    [isRegenerating],
+    [isRegenerating, toastError],
   )
 
   const scrollToMessageListEnd = useCallback(() => {
@@ -302,7 +299,7 @@ const ChatBox = forwardRef(({
   }, [getMessage, handleError, scrollToMessageListEnd, setChatHistory])
 
   const dataContext = useContext(DataContext);
-  const { emit, resetSocket } = useSocket(
+  const { emit, error } = useSocket(
     chatWith === ChatTypes.datasource ?
       sioEvents.datasource_predict :
       chatWith === ChatTypes.application ?
@@ -310,6 +307,12 @@ const ChatBox = forwardRef(({
         sioEvents.promptlib_predict,
     handleSocketEvent
   )
+  
+  useEffect(() => {
+    if (error) {
+      toastError(error);
+    }
+  }, [error, toastError])
 
   // Message Sending to Extension
   const onClickSend = useCallback((data) => {
@@ -361,17 +364,18 @@ const ChatBox = forwardRef(({
 
     const projectId = socketConfig?.projectId
     if (!projectId) {
-      setToastMessage('Alita Code extension Project ID setting is missing. Please set it to continue chat.');
-      setToastSeverity('error');
-      setShowToast(true);
+      toastError('Alita Code extension Project ID setting is missing. Please set it to continue chat.');
       return
+    }
+      
+    if (error) {
+      toastError(error);
+      return;
     }
 
     if (data.application_id) {
       if (!data.llm_settings?.integration_uid) {
-        setToastMessage('Application chat model is missing. Please select another one for chat.');
-        setToastSeverity('error');
-        setShowToast(true);
+        toastError('Application chat model is missing. Please select another one for chat.');
         return
       }
       emit({
@@ -384,9 +388,7 @@ const ChatBox = forwardRef(({
     } else if (data.datasource_id) {
       if (!data.chat_settings_ai?.integration_uid ||
         !data.chat_settings_embedding?.integration_uid) {
-        setToastMessage('Datasource chat model and/or embedding setting is missing. Please select another one for chat.');
-        setToastSeverity('error');
-        setShowToast(true);
+        toastError('Datasource chat model and/or embedding setting is missing. Please select another one for chat.');
         return
       }
       emit({
@@ -416,20 +418,14 @@ const ChatBox = forwardRef(({
           payloadData.model_settings = modelSettings
           payloadData.model_settings.model = getDefaultModel(modelSettings.model, deployments)
           if (!payloadData.model_settings.model.model_name) {
-            setToastMessage('Alita Code extension model settings are missing.');
-            setToastSeverity('error');
-            setShowToast(true);
+            toastError('Alita Code extension model settings are missing.');
             return
           } else if (!payloadData.model_settings.model.integration_uid) {
-            setToastMessage('Alita Code extension integration Uid is missing.');
-            setToastSeverity('error');
-            setShowToast(true);
+            toastError('Alita Code extension integration Uid is missing.');
             return
           }
         } else {
-          setToastMessage('Alita Code extension model settings are missing.');
-          setToastSeverity('error');
-          setShowToast(true);
+          toastError('Alita Code extension model settings are missing.');
           return
         }
       }
@@ -437,7 +433,7 @@ const ChatBox = forwardRef(({
       emit(payload)
     }
   },
-    [scrollToMessageListEnd, dataContext, setChatHistory, emit, chatHistory, deployments])
+    [scrollToMessageListEnd, dataContext, setChatHistory, emit, chatHistory, deployments, error, toastError])
 
   const onSend = useCallback(
     (data) => {
@@ -449,7 +445,6 @@ const ChatBox = forwardRef(({
     },
     [onClickSend, onPredictStream],
   );
-
 
   const { emit: manualEmit } = useManualSocket(
     chatWith === ChatTypes.datasource ?
@@ -470,26 +465,15 @@ const ChatBox = forwardRef(({
     sendMessage: dataContext.sendMessage
   });
 
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
-  const [toastSeverity, setToastSeverity] = useState('info')
-  const onCloseToast = useCallback(
-    () => {
-      setShowToast(false);
-    },
-    [],
-  );
   const onCopyToClipboard = useCallback(
     (id) => async () => {
       const message = chatHistory.find(item => item.id === id);
       if (message) {
         await navigator.clipboard.writeText(message.content);
-        setShowToast(true);
-        setToastMessage('The message has been copied to the clipboard');
-        setToastSeverity('success');
+        toastSuccess('The message has been copied to the clipboard');
       }
     },
-    [chatHistory],
+    [chatHistory, toastSuccess],
   );
 
   return (
@@ -502,10 +486,7 @@ const ChatBox = forwardRef(({
             <ActionButtons
               isStreaming={isStreaming}
               onStopAll={onStopAll}
-              onRefresh={() => {
-                resetSocket();
-                loadCoreData();
-              }}
+              onRefresh={loadCoreData}
             />
             <ActionButton
               aria-label="clear the chat"
@@ -577,12 +558,7 @@ const ChatBox = forwardRef(({
           setChatWith={setChatWith}
           setParticipant={setParticipant}
           shouldHandleEnter />
-        <Toast
-          open={showToast}
-          severity={toastSeverity}
-          message={toastMessage}
-          onClose={onCloseToast}
-        />
+        <ToastComponent/>
         <AlertDialog
           title='Warning'
           alertContent={alertContent}
