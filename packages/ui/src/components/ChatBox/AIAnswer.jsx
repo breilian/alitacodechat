@@ -136,6 +136,7 @@ const AIAnswer = React.forwardRef((props, ref) => {
 
   return (
     <AIAnswerContainer
+      data-testid='message-block'
       sx={{ flexDirection: 'column', gap: '8px', padding: '12px 0px 12px 0px', background: 'transparent' }}
       ref={ref}
       onMouseEnter={onMouseEnter}

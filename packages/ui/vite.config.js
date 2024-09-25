@@ -29,5 +29,11 @@ export default defineConfig({
         chunkFileNames: 'assets/[name].js'
       }
     }
-  }
+  },
+
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './tests/vitest/setup.js',
+  },
 })

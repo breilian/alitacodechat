@@ -65,6 +65,7 @@ const UserMessage = React.forwardRef((props, ref) => {
 
   return (
     <UserMessageContainer
+      data-testid='message-block'
       sx={{ flexDirection: 'column', gap: '8px', padding: '12px 0px 12px 0px ' }}
       ref={ref}
       onMouseEnter={onMouseEnter}
