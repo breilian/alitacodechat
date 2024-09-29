@@ -7,8 +7,8 @@ import DialogContentText from '@mui/material/DialogContentText';
 export const StyledDialogBase = styled(Dialog)(({theme}) => (`
   & .MuiDialog-paper {
     border-radius: 0.5rem;
-    border: 1px solid ${theme.palette.border.lines};
-    background: ${theme.palette.background.secondary};
+    border: 1px solid #3B3E46
+    background: #181F2A;
   }
 `));
 

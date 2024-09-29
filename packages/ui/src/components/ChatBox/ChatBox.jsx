@@ -185,7 +185,7 @@ const ChatBox = forwardRef(({
   )
 
   const scrollToMessageListEnd = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ block: "end" });
+    // messagesEndRef.current?.scrollIntoView({ block: "end" });
   }, [])
 
   const handleSocketEvent = useCallback(async message => {
