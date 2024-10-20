@@ -185,7 +185,7 @@ const ChatBox = forwardRef(({
   )
 
   const scrollToMessageListEnd = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ block: "end" });
+    // messagesEndRef.current?.scrollIntoView({ block: "end" });
   }, [])
 
   const handleSocketEvent = useCallback(async message => {
@@ -194,18 +194,18 @@ const ChatBox = forwardRef(({
     const [msgIndex, msg] = getMessage(stream_id || message_id, message_type)
 
     const scrollToMessageBottom = () => {
-      if (sessionStorage.getItem(AUTO_SCROLL_KEY) === 'true') {
-        const messageElement = listRefs.current[msgIndex]
-        if (messageElement) {
-          const parentElement = messageElement.parentElement;
-          messageElement.scrollIntoView({ block: "end" });
-          if (parentElement) {
-            parentElement.scrollTop += 12;
-          }
-        } else {
-          scrollToMessageListEnd();
-        }
-      }
+      // if (sessionStorage.getItem(AUTO_SCROLL_KEY) === 'true') {
+      //   const messageElement = listRefs.current[msgIndex]
+      //   if (messageElement) {
+      //     const parentElement = messageElement.parentElement;
+      //     messageElement.scrollIntoView({ block: "end" });
+      //     if (parentElement) {
+      //       parentElement.scrollTop += 12;
+      //     }
+      //   } else {
+      //     scrollToMessageListEnd();
+      //   }
+      // }
     };
     let t
 
