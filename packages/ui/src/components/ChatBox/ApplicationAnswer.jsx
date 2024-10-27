@@ -51,7 +51,7 @@ const ApplicationAnswer = React.forwardRef((props, ref) => {
   )
 
   return (
-    <UserMessageContainer sx={{ flexDirection: 'column', gap: '8px', padding: '12px 0px 12px 0px', background: 'transparent' }} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
+    <UserMessageContainer data-testid='message-block' sx={{ flexDirection: 'column', gap: '8px', padding: '12px 0px 12px 0px', background: 'transparent' }} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
       <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '0px 4px 0px 4px' }}>
         <Box
           sx={{

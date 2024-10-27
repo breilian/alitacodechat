@@ -35,6 +35,7 @@ module.exports = {
   },
   'globals': {
     'styled': 'readonly',
+    'vitest': true,
   },
   // 'caseSensitive': false,
   'rules': {
