@@ -13,7 +13,7 @@ test.describe('UI tests', () => {
     await expect(chatPage.cleanChatButton).toBeVisible();
   });
 
-  test('list of promts should match to promts from https://eye.projectalita.ai/', async ({ page }) => {
+  test('Verify that the list of prompts matches the prompts from https://eye.projectalita.ai/', async ({ page }) => {
     const chatPage = new ChatPage(page);
     await chatPage.openChat();
     await chatPage.typeInMessageField('/');
@@ -24,7 +24,7 @@ test.describe('UI tests', () => {
     ]);
   });
 
-  test('list of datasources should match to datasources from https://eye.projectalita.ai/', async ({ page }) => {
+  test('Verify that the list of datasources matches the datasources from https://eye.projectalita.ai/', async ({ page }) => {
     const chatPage = new ChatPage(page);
     await chatPage.openChat();
     await chatPage.typeInMessageField('#');
@@ -36,7 +36,7 @@ test.describe('UI tests', () => {
     ]);
   });
 
-  test('list of agents should match to agents from https://eye.projectalita.ai/', async ({ page }) => {
+  test('Verify that the list of agents matches the agents from https://eye.projectalita.ai/', async ({ page }) => {
     const chatPage = new ChatPage(page);
     await chatPage.openChat();
     await chatPage.typeInMessageField('@');
