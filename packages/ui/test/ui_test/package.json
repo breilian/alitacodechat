@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "UI tests for Alita chat",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "npx playwright test",
     "lint": "eslint .",
@@ -12,9 +13,8 @@
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^22.9.0",
-    "eslint": "^8.57.1",
+    "eslint": "^9.15.0",
     "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-plugin-import": "^2.31.0",
     "esm": "^3.2.25"
   },
   "dependencies": {
