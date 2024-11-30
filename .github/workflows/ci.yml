@@ -30,7 +30,7 @@ jobs:
         npx webpack serve --mode development --env plugin=http://localhost:3333 &
     - name: Install test dependencies and run tests
       run: |
-        cd test/ui_test
+        cd packages/ui/test/ui_test
         npm install
         npm test
     # - name: Run ESLint
