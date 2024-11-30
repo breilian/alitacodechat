@@ -32,6 +32,7 @@ jobs:
       run: |
         cd packages/ui/test/ui_test
         npm install
+        npx playwright install
         npm test
     # - name: Run ESLint
     #   run: npm run lint
