@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-vars */
 import { ROLES, sioEvents, SocketMessageType, ChatTypes, ToolActionStatus } from '@/common/constants';
 import { VsCodeMessageTypes } from 'shared';
-import { buildErrorMessage } from '@/common/utils';
+import { buildErrorMessage, convertJsonToString } from '@/common/utils';
 import { forwardRef, useCallback, useContext, useEffect, useImperativeHandle, useRef, useState } from "react";
 import AlertDialog from '../AlertDialog';
 import AIAnswer from './AIAnswer';
@@ -28,6 +28,73 @@ import useToast from "@/components/useToast.jsx";
 const USE_STREAM = true
 const MESSAGE_REFERENCE_ROLE = 'reference'
 
+export const generateApplicationPayload = ({
+                                             projectId, application_id, instructions, temperature,
+                                             max_tokens, top_p, top_k, model_name, integration_uid,
+                                             variables, tools, name, currentVersionId, question_id
+                                           }) => ({
+  application_id,
+  user_name: name,
+  project_id: projectId,
+  version_id: currentVersionId,
+  instructions,
+  llm_settings: {
+    temperature,
+    max_tokens,
+    top_p,
+    top_k,
+    model_name,
+    integration_uid,
+  },
+  variables: variables ? variables.map((item) => {
+    const {key, name: variableName, value} = item;
+    return {
+      name: variableName || key,
+      value,
+    }
+  }) : [],
+  tools,
+  question_id,
+})
+
+export const generateApplicationStreamingPayload = ({
+                                                      projectId,
+                                                      application_id,
+                                                      instructions,
+                                                      temperature,
+                                                      max_tokens,
+                                                      top_p,
+                                                      top_k,
+                                                      model_name,
+                                                      integration_uid,
+                                                      variables,
+                                                      question,
+                                                      tools,
+                                                      chatHistory,
+                                                      name,
+                                                      currentVersionId,
+                                                      question_id,
+                                                      interaction_uuid,
+                                                    }) => {
+  const payload = generateApplicationPayload({
+    projectId, application_id, instructions, temperature,
+    max_tokens, top_p, top_k, model_name, integration_uid,
+    variables, tools, name, currentVersionId, question_id
+  })
+  payload.thread_id = chatHistory?.at(-1)?.threadId
+  payload.chat_history = chatHistory ? chatHistory.map((message) => {
+    const {role, content, name: userName} = message;
+    if (userName) {
+      return {role, content, name: userName};
+    } else {
+      return {role, content}
+    }
+  }) : []
+  payload.user_input = question
+  payload.question_id = question_id
+  payload.interaction_uuid = interaction_uuid
+  return payload
+}
 
 const getDefaultModel = (model = {}, modelsList) => {
   const { model_name = '', integration_uid = '' } = model;
@@ -231,6 +298,7 @@ const ChatBox = forwardRef(({
         if (response_metadata?.finish_reason) {
           msg.isStreaming = false
         }
+        msg.threadId = response_metadata?.thread_id
         break
       case SocketMessageType.AgentLlmChunk:
         t = msg.toolActions.find(i => i.id === message?.response_metadata?.tool_run_id)
@@ -266,8 +334,17 @@ const ChatBox = forwardRef(({
         t = msg.toolActions.find(i => i.id === message?.response_metadata?.tool_run_id)
         if (t) {
           Object.assign(t, {
-            content: message?.content,
+            content: convertJsonToString(message?.content ?? ''),
             status: ToolActionStatus.complete
+          })
+        }
+        break
+      case SocketMessageType.AgentToolError:
+        t = msg.toolActions?.find(i => i.id === message?.response_metadata?.tool_run_id)
+        if (t) {
+          Object.assign(t, {
+            content: convertJsonToString(message?.content ?? ''),
+            status: ToolActionStatus.error
           })
         }
         break
@@ -358,7 +435,9 @@ const ChatBox = forwardRef(({
         role: ROLES.User,
         name,
         content: question,
-        created_at: new Date()
+        created_at: new Date(),
+        participant_id: participantRef.current?.id,
+        sentTo: participantRef.current ?? {}
       }]
     })
 
@@ -378,12 +457,16 @@ const ChatBox = forwardRef(({
         toastError('Application chat model is missing. Please select another one for chat.');
         return
       }
-      emit({
+      const payload = generateApplicationStreamingPayload({
         ...data,
-        project_id: projectId,
-        user_input: question,
-        chat_history: chatHistory.filter(i => i.role !== MESSAGE_REFERENCE_ROLE).concat(messages),
+        ...data.llm_settings,
+        projectId,
+        question,
+        name,
+        chatHistory,
       })
+
+      emit(payload)
       return
     } else if (data.datasource_id) {
       if (!data.chat_settings_ai?.integration_uid ||
