@@ -35,5 +35,11 @@ jobs:
         npm install
         npx playwright install
         npm test
+    - name: Upload test results on failure
+      if: failure()
+      uses: actions/upload-artifact@v2
+      with:
+        name: failed-test-results
+        path: packages/ui/test/ui_test/test-results/
     # - name: Run ESLint
     #   run: npm run lint

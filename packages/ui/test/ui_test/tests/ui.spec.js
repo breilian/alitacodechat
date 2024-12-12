@@ -44,4 +44,17 @@ test.describe('UI tests', () => {
       'SDLC helper'
     ]);
   });
+
+  test('Verify prompt pop-up appears with possibility to change variables', async ({ page }) => {
+    const chatPage = new ChatPage(page);
+    await chatPage.openChat();
+    await chatPage.typeInMessageField('/');
+    await chatPage.chooseAutocompleteOption('Test Cases Generator');
+    await chatPage.checkPromptModalComponents('Test Cases Generator');
+    await chatPage.changePromptModalVariable2('As a registered user, I want to log into my account using my email and password');
+    await chatPage.applyPrompt();
+    await chatPage.verifyChosenPrompt('Test Cases Generator');
+    await chatPage.verifySettingsOpenPromptModal();
+    await chatPage.applyPrompt();
+  });
 });
