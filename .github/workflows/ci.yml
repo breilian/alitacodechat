@@ -41,5 +41,3 @@ jobs:
       with:
         name: failed-test-results
         path: packages/ui/test/ui_test/test-results/
-    # - name: Run ESLint
-    #   run: npm run lint

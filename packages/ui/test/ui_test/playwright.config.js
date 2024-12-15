@@ -13,7 +13,7 @@ export default defineConfig({
   reporter: 'html',
   use: {
     baseURL: 'http://localhost:8080/',
-    trace: 'off',
+    trace: 'on-first-retry',
     testIdAttribute: 'value',
     screenshot: 'only-on-failure',
   },
