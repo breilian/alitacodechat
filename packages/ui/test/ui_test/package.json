@@ -5,16 +5,12 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "npx playwright test",
-    "lint": "eslint .",
-    "fix": "eslint . --fix"
+    "test": "npx playwright test"
   },
   "author": "tatiana_bontsevich@epam.com",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^22.9.0",
-    "eslint": "^9.15.0",
-    "eslint-config-airbnb-base": "^15.0.0",
     "esm": "^3.2.25"
   },
   "dependencies": {
