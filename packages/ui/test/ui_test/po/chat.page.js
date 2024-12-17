@@ -17,7 +17,7 @@ export default class ChatPage {
     this.promptModalVariable = page.locator('.MuiDialogContent-root .MuiInputBase-root textarea[aria-invalid="false"]');
     this.promptModalOkBtn = page.locator('button.MuiButton-root[type="button"]')
     this.promptSettingsOpenVariableModal = page.locator('[data-testid="SettingsButton"]');
-    this.chosenPromptName = page.locator('//button[@data-testid="Settings-button"]/preceding-sibling::span');
+    this.chosenPromptName = page.locator('//button[@data-testid="SettingsButton"]/preceding-sibling::span');
     this.serverError = page.locator('#webpack-dev-server-client-overlay');
     this.alertError = page.locator('svg[data-testid="ErrorOutlineIcon"]');
   }
@@ -87,7 +87,7 @@ export default class ChatPage {
     ];
     for (const errorMessage of errorMessages) {
       const errorLocator = this.page.locator(`text=${errorMessage}`);
-      if (await errorLocator.toBeVisible()) {
+      if (await errorLocator.isVisible()) {
         throw new Error('Some Error message is displayed.');
       }
     }
@@ -95,13 +95,13 @@ export default class ChatPage {
 
   async verifyErrorOverlayNotDisplayed() {
     await this.page.waitForTimeout(2000);
-    if (await this.serverError.toBeVisible()) {
+    if (await this.serverError.isVisible()) {
       throw new Error('Error modal webpack-dev-server is displayed.');
     }
   }
 
   async verifyErrorAlertNotDisplayed() {
-    if (await this.alertError.toBeVisible()) {
+    if (await this.alertError.isVisible()) {
       throw new Error('Error alert is displayed.');
     }
   }
