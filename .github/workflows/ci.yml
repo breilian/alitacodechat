@@ -28,7 +28,7 @@ jobs:
     - name: Start chat/webpack run
       run: |
         cd packages/ui
-        npx webpack serve --mode development --env plugin=http://localhost:3333 &
+        npx webpack --env plugin=http://localhost:3333 &
     - name: Install test dependencies and run tests
       run: |
         cd packages/ui/test/ui_test
