@@ -23,7 +23,7 @@ export default class ChatPage {
   }
   
   async openChat() {
-    await this.page.goto('/');
+    await this.page.goto('file:///C:/Users/tatiana_bontsevich2/Alita%20project/alitacodechat/packages/ui/dist-webpack/index.html');
   }
 
   async typeInMessageField(text) {
