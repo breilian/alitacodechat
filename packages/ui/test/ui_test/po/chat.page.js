@@ -1,4 +1,5 @@
 import { expect } from '@playwright/test';
+import path from 'path';
 
 export default class ChatPage {
   constructor(page) {
@@ -23,7 +24,9 @@ export default class ChatPage {
   }
   
   async openChat() {
-    await this.page.goto('file:///C:/Users/tatiana_bontsevich2/Alita%20project/alitacodechat/packages/ui/dist-webpack/index.html');
+    const relativePath = '../../dist-webpack/index.html';
+    const absolutePath = path.resolve(relativePath);
+    await this.page.goto(`file://${absolutePath}`);
   }
 
   async typeInMessageField(text) {
