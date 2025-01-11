@@ -8,7 +8,7 @@ export default class ChatPage {
     this.sendButton = page.locator('button[data-testid="SendButton"]');
     this.chatArea = page.locator('.MuiList-root');
     this.chatAreaAnswer = page.locator('.MuiList-root > li:nth-child(2) > div:nth-child(2) span');
-    this.chatAreaPromptResult = page.locator('ul li div>p[style="margin-block-start: 0px;"]:nth-child(1)');
+    this.chatAreaPromptResult = page.locator('ul li:nth-child(2)>div:nth-child(2)');
     this.refreshButton = page.locator('[data-testid="RefreshOutlinedIcon"]');
     this.scrollDownArrow = page.locator('[data-testid="KeyboardDoubleArrowDownOutlinedIcon"]');
     this.cleanChatButton = page.locator('[data-testid="ClearTheChatButton"]');

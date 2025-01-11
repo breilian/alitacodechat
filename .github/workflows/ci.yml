@@ -7,6 +7,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment:
+          - { SERVER_HOST: "https://eye.projectalita.ai", SERVER_PID: "1396", SERVER_TOKEN: "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiZjZiODUxMjMtODk0YS00OWJlLTg5YzQtNDZmZmFhZDVkMDE4IiwiZXhwaXJlcyI6IjIwMjUtMDctMTBUMTU6MDgifQ.4LFVbtLPacqzcvANGjjXJ-oHe-fxQK-haeq850Bl6FkNZhpgV12MIMuJSuCUwgAKxo_OWIonikTeKJCN46j9Lw" }
+          - { SERVER_HOST: "https://eye.projectalita.ai/main", SERVER_PID: "159", SERVER_TOKEN: "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiNjhlMzI3MjItYWIxNy00NmVmLThmNWYtNmFiYjdhOTg3NDIwIiwiZXhwaXJlcyI6IjIwMjUtMDctMTBUMTU6MDcifQ.e1X78yDbwBDrZXaLUjzV_P1NWf56X8COm2YQpqCJtP5L8rjnPBJoe0yz8MqxQn0DnU80WY7YknJh_W_2nUNy1A" }
 
     steps:
     - uses: actions/checkout@v4
@@ -24,7 +29,7 @@ jobs:
       run: |
         cd packages/ui/test/plugin
         npm install
-        node server.js -sh https://eye.projectalita.ai -spid 1396 -muid 596884aa-fc90-4e19-8de0-8ef90fa5a9b6 -st eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiOTJkNmRjM2MtNTRmNi00NWI0LWFhM2MtNGNiZjM0MjkzMWFlIiwiZXhwaXJlcyI6IjIwMjUtMDEtMTVUMTQ6NTAifQ.N-wISbLTwvd89-mvqqdxlbNrFJj9CvM3KgmH58idf44OIe9wl1xt_7GzWCpgpOgjKlASdsjLKiQy4gIHCVVvMg &
+        node server.js -sh ${{ matrix.environment.SERVER_HOST }} -spid ${{ matrix.environment.SERVER_PID }} -muid 596884aa-fc90-4e19-8de0-8ef90fa5a9b6 -st ${{ matrix.environment.SERVER_TOKEN }} &
     - name: Start chat/webpack run
       run: |
         cd packages/ui
