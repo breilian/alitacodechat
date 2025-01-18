@@ -71,7 +71,11 @@ test.describe('UI tests', () => {
     await chatPage.applyPrompt();
     await chatPage.verifyChosenPrompt('Test Cases Generator');
     await chatPage.verifySettingsOpenPromptModal();
+    await chatPage.changePromptModalVariable(0,'The project is an online learning platform aimed at delivering interactive courses to users.' +
+      'It features user registration, course management, progress tracking, and certificate generation.');
     await chatPage.applyPrompt();
+    await chatPage.verifyPromptModalClosed();
+    await chatPage.verifyChosenPrompt('Test Cases Generator');
   });
 
   test('Verify user can choose prompt and receive result', async ({ page }) => {
@@ -84,5 +88,37 @@ test.describe('UI tests', () => {
     await chatPage.typeInMessageField('start');
     await chatPage.sendMessage();
     await chatPage.verifyChatPromptResultExists();
+  });
+
+  test('Verify user can delete one answer', async ({ page }) => {
+    const chatPage = new ChatPage(page);
+    await chatPage.openChat();
+    await chatPage.typeInMessageField('start');
+    await chatPage.sendMessage();
+    await chatPage.verifyDeleteMessageBtnAndClick('Delete');
+    await chatPage.checkDeleteMessageAlertComponents(`The deleted message can't be restored. Are you sure to delete the message?`);
+    await chatPage.confirmDeleteMessage();
+    await chatPage.verifyMessageIsDeleted();
+  });
+
+  test('Verify user can clean the chat', async ({ page }) => {
+    const chatPage = new ChatPage(page);
+    await chatPage.openChat();
+    await chatPage.typeInMessageField('start');
+    await chatPage.sendMessage();
+    await chatPage.clickCleanChatBtn();
+    await chatPage.checkDeleteMessageAlertComponents(`The deleted messages can't be restored. Are you sure to delete all the messages?`);
+    await chatPage.confirmDeleteMessage();
+    await chatPage.verifyChatIsCleaned();
+  });
+
+  test.skip('Verify user can copy an answer to clipboard', async ({ page }) => {
+    const chatPage = new ChatPage(page);
+    await chatPage.openChat();
+    await chatPage.typeInMessageField('start');
+    await chatPage.sendMessage();
+    await chatPage.verifyCopyMessageBtnAndClick('Copy to clipboard');
+    await chatPage.verifyCopyMessageAlert('The message has been copied to the clipboard');
+    await chatPage.verifyMessageIsCopiedToClipboard('Sure! How can I assist you today?');
   });
 });
