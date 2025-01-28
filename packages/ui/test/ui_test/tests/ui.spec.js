@@ -112,7 +112,7 @@ test.describe('UI tests', () => {
     await chatPage.verifyChatIsCleaned();
   });
 
-  test.skip('Verify user can copy an answer to clipboard', async ({ page }) => {
+  test.only('Verify user can copy an answer to clipboard', async ({ page }) => {
     const chatPage = new ChatPage(page);
     await chatPage.openChat();
     await chatPage.typeInMessageField('start');

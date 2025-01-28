@@ -131,14 +131,6 @@ export default class ChatPage {
     await this.deleteMsgBtn.click();
   }
 
-  async verifyCopyMessageBtnAndClick(tooltipText) {
-    await this.chatAreaPromptResult.locator('span').waitFor();
-    await this.chatAreaPromptResult.hover();
-    await this.copyMsgBtn.hover();
-    await expect(this.tooltip).toHaveText(tooltipText);
-    await this.copyMsgBtn.click();
-  }
-
   async checkDeleteMessageAlertComponents(alertText) {
     await this.alertToDeleteMsgTitle.waitFor();
     await expect(this.alertToDeleteMsgTitle).toHaveText('Warning');
@@ -158,16 +150,6 @@ export default class ChatPage {
   async verifyChatIsCleaned() {
     await expect(this.chatAreaUserMessage).not.toBeVisible();
     await expect(this.chatAreaPromptResult).not.toBeVisible();
-  }
-
-  async verifyCopyMessageAlert(alertText) {
-    await this.alertMessageIsCopied.waitFor();
-    await expect(this.alertMessageIsCopied).toHaveText(alertText);
-  }
-
-  async verifyMessageIsCopiedToClipboard(copiedText) {
-    const clipboardContent = await page.evaluate(() => navigator.clipboard.readText());
-    await expect(clipboardContent).toBe(copiedText);
   }
 
   async clickCleanChatBtn() {
