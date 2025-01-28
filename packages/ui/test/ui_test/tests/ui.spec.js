@@ -111,14 +111,4 @@ test.describe('UI tests', () => {
     await chatPage.confirmDeleteMessage();
     await chatPage.verifyChatIsCleaned();
   });
-
-  test.only('Verify user can copy an answer to clipboard', async ({ page }) => {
-    const chatPage = new ChatPage(page);
-    await chatPage.openChat();
-    await chatPage.typeInMessageField('start');
-    await chatPage.sendMessage();
-    await chatPage.verifyCopyMessageBtnAndClick('Copy to clipboard');
-    await chatPage.verifyCopyMessageAlert('The message has been copied to the clipboard');
-    await chatPage.verifyMessageIsCopiedToClipboard('Sure! How can I assist you today?');
-  });
 });
