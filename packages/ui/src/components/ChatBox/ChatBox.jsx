@@ -465,7 +465,7 @@ const ChatBox = forwardRef(({
         ...data,
         ...data.llm_settings,
         projectId,
-        question,
+        question: question + (selectedText ? '\nSelected text: ' + selectedText : ''),
         name,
         chatHistory,
         interaction_uuid
