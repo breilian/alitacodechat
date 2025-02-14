@@ -447,7 +447,7 @@ const ChatBox = forwardRef(({
 
     const projectId = socketConfig?.projectId
     if (!projectId) {
-      toastError('Alita Code extension Project ID setting is missing. Please set it to continue chat.');
+      toastError('Elitea Code extension Project ID setting is missing. Please set it to continue chat.');
       return
     }
       
@@ -508,14 +508,14 @@ const ChatBox = forwardRef(({
           payloadData.model_settings = modelSettings
           payloadData.model_settings.model = getDefaultModel(modelSettings.model, deployments)
           if (!payloadData.model_settings.model.model_name) {
-            toastError('Alita Code extension model settings are missing.');
+            toastError('Elitea Code extension model settings are missing.');
             return
           } else if (!payloadData.model_settings.model.integration_uid) {
-            toastError('Alita Code extension integration Uid is missing.');
+            toastError('Elitea Code extension integration Uid is missing.');
             return
           }
         } else {
-          toastError('Alita Code extension model settings are missing.');
+          toastError('Elitea Code extension model settings are missing.');
           return
         }
       }
