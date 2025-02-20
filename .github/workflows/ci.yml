@@ -1,13 +1,18 @@
 name: Continuous Integration
 
 on:
+  push:
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        environment: ["AI", "MAIN"]
+          
     steps:
     - uses: actions/checkout@v4
     - name: Set up Node.js
@@ -20,11 +25,23 @@ jobs:
       run: |
         cd packages/ui
         npm install
+    - name: Set environment variables
+      run: |
+        if [ "${{ matrix.environment }}" == "AI" ]; then
+          echo "SERVER_HOST=${{ vars.SERVER_HOST_AI }}" >> $GITHUB_ENV
+          echo "SERVER_PID=${{ vars.SERVER_PID_AI }}" >> $GITHUB_ENV
+          echo "SERVER_TOKEN=${{ secrets.SERVER_TOKEN_AI }}" >> $GITHUB_ENV
+        elif [ "${{ matrix.environment }}" == "MAIN" ]; then
+          echo "SERVER_HOST=${{ vars.SERVER_HOST_MAIN }}" >> $GITHUB_ENV
+          echo "SERVER_PID=${{ vars.SERVER_PID_MAIN }}" >> $GITHUB_ENV
+          echo "SERVER_TOKEN=${{ secrets.SERVER_TOKEN_MAIN }}" >> $GITHUB_ENV
+        fi
+        echo "SERVER_UID=${{ vars.SERVER_UID }}" >> $GITHUB_ENV
     - name: Start server
       run: |
         cd packages/ui/test/plugin
         npm install
-        node server.js -sh https://eye.projectalita.ai -spid 1396 -muid 596884aa-fc90-4e19-8de0-8ef90fa5a9b6 -st eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiOTJkNmRjM2MtNTRmNi00NWI0LWFhM2MtNGNiZjM0MjkzMWFlIiwiZXhwaXJlcyI6IjIwMjUtMDEtMTVUMTQ6NTAifQ.N-wISbLTwvd89-mvqqdxlbNrFJj9CvM3KgmH58idf44OIe9wl1xt_7GzWCpgpOgjKlASdsjLKiQy4gIHCVVvMg &
+        node server.js -sh $SERVER_HOST -spid $SERVER_PID -muid $SERVER_UID -st $SERVER_TOKEN &
     - name: Start chat/webpack run
       run: |
         cd packages/ui

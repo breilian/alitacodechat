@@ -7,8 +7,9 @@ export default class ChatPage {
     this.messageField = page.locator('textarea#standard-multiline-static');
     this.sendButton = page.locator('button[data-testid="SendButton"]');
     this.chatArea = page.locator('.MuiList-root');
+    this.chatAreaUserMessage = page.locator('ul li:nth-child(1)>div:nth-child(2)');
     this.chatAreaAnswer = page.locator('.MuiList-root > li:nth-child(2) > div:nth-child(2) span');
-    this.chatAreaPromptResult = page.locator('ul li div>p[style="margin-block-start: 0px;"]:nth-child(1)');
+    this.chatAreaPromptResult = page.locator('ul li:nth-child(2)>div:nth-child(2)');
     this.refreshButton = page.locator('[data-testid="RefreshOutlinedIcon"]');
     this.scrollDownArrow = page.locator('[data-testid="KeyboardDoubleArrowDownOutlinedIcon"]');
     this.cleanChatButton = page.locator('[data-testid="ClearTheChatButton"]');
@@ -21,6 +22,14 @@ export default class ChatPage {
     this.chosenPromptName = page.locator('//button[@data-testid="SettingsButton"]/preceding-sibling::span');
     this.serverError = page.locator('#webpack-dev-server-client-overlay');
     this.alertError = page.locator('svg[data-testid="ErrorOutlineIcon"]');
+    this.alertMessageIsCopied = page.locator('div.MuiAlert-root');
+    this.tooltip = page.locator('.MuiTooltip-tooltip');
+    this.alertToDeleteMsgTitle = page.locator('#alert-dialog-title');
+    this.alertToDeleteMsgContent = page.locator('#alert-dialog-description');
+    this.alertToDeleteMsgBtnCancel = page.locator('div[aria-describedby="alert-dialog-description"] button:nth-child(1)');
+    this.alertToDeleteMsgBtnConfirm = page.locator('div[aria-describedby="alert-dialog-description"] button:nth-child(2)');
+    this.copyMsgBtn = page.locator('[aria-label="Copy to clipboard"]');
+    this.deleteMsgBtn = page.locator('[aria-label="Delete"]');
   }
   
   async openChat() {
@@ -54,7 +63,8 @@ export default class ChatPage {
   }
 
   async changePromptModalVariable(index, inputText) {
-    await this.promptModalVariable.nth(index).type(inputText);
+    await this.promptModalVariable.nth(index).fill('');
+    await this.promptModalVariable.nth(index).fill(inputText);
   }
 
   async applyPrompt() {
@@ -70,6 +80,10 @@ export default class ChatPage {
     await this.promptSettingsOpenVariableModal.click();
     await this.promptModalHeader.waitFor();
     await expect(this.promptModalHeader).toBeVisible();
+  }
+
+  async verifyPromptModalClosed() {
+    await expect(this.promptModalHeader).not.toBeVisible();
   }
 
   async sendMessage() {
@@ -107,5 +121,39 @@ export default class ChatPage {
     if (await this.alertError.isVisible()) {
       throw new Error('Error alert is displayed.');
     }
+  }
+
+  async verifyDeleteMessageBtnAndClick(tooltipText) {
+    await this.chatAreaPromptResult.waitFor();
+    await this.chatAreaPromptResult.hover();
+    await this.deleteMsgBtn.hover();
+    await expect(this.tooltip).toHaveText(tooltipText);
+    await this.deleteMsgBtn.click();
+  }
+
+  async checkDeleteMessageAlertComponents(alertText) {
+    await this.alertToDeleteMsgTitle.waitFor();
+    await expect(this.alertToDeleteMsgTitle).toHaveText('Warning');
+    await expect(this.alertToDeleteMsgContent).toHaveText(alertText);
+    await expect(this.alertToDeleteMsgBtnCancel).toHaveText('Cancel');
+    await expect(this.alertToDeleteMsgBtnConfirm).toHaveText('Confirm');
+  }
+
+  async confirmDeleteMessage() {
+    await this.alertToDeleteMsgBtnConfirm.click();
+  }
+
+  async verifyMessageIsDeleted() {
+    await expect(this.chatAreaPromptResult).not.toBeVisible();
+  }
+
+  async verifyChatIsCleaned() {
+    await expect(this.chatAreaUserMessage).not.toBeVisible();
+    await expect(this.chatAreaPromptResult).not.toBeVisible();
+  }
+
+  async clickCleanChatBtn() {
+    await this.chatAreaAnswer.waitFor();
+    await this.cleanChatButton.click();
   }
 }
